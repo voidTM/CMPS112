@@ -60,11 +60,11 @@
 ;;(define ())
 
 (define (read-list lst)
-  (printf "~s~n" (length lst))
+  ;;(printf "~s~n" (length lst))
   ;;(printf "~s~n" lst)
-  (when (and (< 0 (length lst)) (list? (cdr lst)))
-    (run-expr (car lst))
+  (if (and (< 1 (length lst)) (list? (cdr lst)))
     (read-list (cdr lst))
+    (run-expr (car lst))
   )
 )
 
@@ -97,16 +97,16 @@
     ;; each line is a list?
     (map (lambda (line)
       (printf "~s~n" (length line))
-      (cond
+      ;;(cond
          ;;presume that there needs two expressions to be evaluated
-        ((= 3 (length line))
-          (printf "~s~n" (caaddr line)))
+        ;;((= 3 (length line))
+          ;;(printf "~s~n" (caaddr line)))
 
         ;; presume only 1 expression to be evaluated
-        ((and (= 2 (length line)) (list? (cadr line)))
-          (printf "~s~n" (caadr line)))
-      )
-      ;;(read-list (cdr line))
+        ;;((and (= 2 (length line)) (list? (cadr line)))
+        ;;  (printf "~s~n" (caadr line)))
+      ;;)
+      (read-list line)
     )program)
 )
 
