@@ -179,14 +179,16 @@
   `(
     ))
 (define (hash-labels program)
-   (map (lambda (line) 
+   (map (lambda (line)
           (when (not (null? line))
             (when (or (= 3 (length line))
-                      (and (= 2 (length line)) 
+                      (and (= 2 (length line))
                            (not (list? (cadr line)))))
                 (hash-set! *label-table* (cadr line) (- (car line) 1 ))
                 ))) program)
 )
+
+;; take in a program list and then interpret line by line
 
 ;; take in a program list and then interpret line by line
 
