@@ -102,6 +102,92 @@
     )program)
 )
 
+;; function-table
+;; associated with the 6 functions in statements
+(define *function-table* (make-hash))
+(define (function-put! key value)
+    (hash-set! *function-table* key value))
+(for-each
+  (lambda (pair) (hash-set! function-table (car pair) (cadr pair)))
+  '(
+    ;; functions
+    (dim  ,ft_dim)
+    (let  ,f_let)
+    (print  ,ft_print)
+    (input  ,ft_input)
+    (goto (void))
+    (if (void))
+  )
+)
+
+;; variable-table
+;; functions are included
+(define *variable-table* (make-hash))
+(define (variable-put! key value)
+    (hash-set! *variable-table* key value))
+(for-each
+  (lambda (pair) (hash-set! variable-table (car pair) (cadr pair)))
+  '(
+    ;; variables
+    (log10_2 0.301029995663981195213738894724493026768189881)
+        (sqrt_2  1.414213562373095048801688724209698078569671875)
+        (e       2.718281828459045235360287471352662497757247093)
+        (pi      3.141592653589793238462643383279502884197169399)
+        (div     ,(lambda (x y) (floor (/ x y))))
+        (log10   ,(lambda (x) (/ (log x) (log 10.0))))
+        (mod     ,(lambda (x y) (- x (* (div x y) y))))
+        (quot    ,(lambda (x y) (truncate (/ x y))))
+        (rem     ,(lambda (x y) (- x (* (quot x y) y))))
+    (<>      ,(lambda (x y) (not(= x y)))
+        (+       ,+)
+    (-       ,-)
+    (*       ,*)
+    (/       ,/)
+    (<=      ,<=)
+    (>=      ,>=)
+    (=       ,=)
+    (<       ,<)
+    (>       ,>)
+    (abs     ,abs)
+    (sin     ,sin)
+    (cos     ,cos)
+    (tan     ,tan)
+    (acos    ,acos)
+    (asin    ,asin)
+    (atan    ,atan)
+    (>       ,>)
+    (>       ,>)
+        (^       ,expt)
+        (ceil    ,ceiling)
+    (round   ,round)
+        (exp     ,exp)
+        (floor   ,floor)
+        (log     ,log)
+        (sqrt    ,sqrt)
+  )
+)
+
+;; label-table
+;; holds addresses of each line, one level up from statements
+(define *label-table* (make-hash))
+(define (label-put! key value)
+    (hash-set! *label-table* key value))
+(for-each
+  (lambda (pair)
+    ;;First element in list is key other elements are value
+    (label-put! (car pair) (cadr pair)))
+  `(
+    ))
+(define (hash-labels program)
+   (map (lambda (line) 
+          (when (not (null? line))
+            (when (or (= 3 (length line))
+                      (and (= 2 (length line)) 
+                           (not (list? (cadr line)))))
+                (hash-set! *label-table* (cadr line) (- (car line) 1 ))
+                ))) program)
+)
+
 ;; take in a program list and then interpret line by line
 
 
