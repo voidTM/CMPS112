@@ -155,6 +155,7 @@
     (acos    ,acos)
     (asin    ,asin)
     (atan    ,atan)
+    (trunc   ,truncate)
     (>       ,>)
     (>       ,>)
     (^       ,expt)
