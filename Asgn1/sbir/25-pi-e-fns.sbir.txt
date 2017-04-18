@@ -1,12 +1,12 @@
 ;;File: 25-pi-e-fns.sb
 ;;   1: # $Id: 25-pi-e-fns.sb,v 1.1 2009-02-03 17:37:28-08 - - $
-;;   2: 
+;;   2:
 ;;   3: print pi, e
 ;;   4: let pi = 4 * atan(1)
 ;;   5: let e = exp(1)
 ;;   6: print "pi = ", pi
 ;;   7: print "e = ", e
-;;   8: 
+;;   8:
 ;;   9: print "sqrt ( pi ) = ", sqrt ( pi )
 ;;  10: print "exp  ( pi ) = ", exp  ( pi )
 ;;  11: print "log  ( pi ) = ", log  ( pi )
@@ -20,7 +20,7 @@
 ;;  19: print "ceil ( pi ) = ", ceil ( pi )
 ;;  20: print "floor( pi ) = ", floor( pi )
 ;;  21: print "round( pi ) = ", round( pi )
-;;  22: 
+;;  22:
 (
 (    1          )
 (    2          )

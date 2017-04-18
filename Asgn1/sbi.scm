@@ -49,58 +49,6 @@
     )
 )
 
-;; SBIR Statements
-
-;;(define (dim-statement args))
-
-;;(define ())
-
-(define (shorten-line line)
-  (printf "~s~n" line)
-
-  (if (< 2 (length line))
-     (shorten-line (cdr line))
-     line
-  )
-)
-
-(define (add-labels program)
-    (map
-        (lambda (line)
-            (when
-                (or (= 3 (length line))
-                    (and (= 2 (length line))
-                        (not (list? (cadr line)))
-                    )
-                )
-                (printf "~n~s is label ~s ~n" (cadr line) (car line))
-                (when (< 1 (length (cdr line)))
-                  (printf "~n~s" (caaddr line))
-                )
-                ;;(hash-set! *label-table* (cadr line) (car line))
-
-            )
-        )
-            program
-    )
-)
-
-(define (write-program-by-line filename program)
-    (printf "==================================================~n")
-    (printf "~a: ~s~n" *run-file* filename)
-    (printf "==================================================~n")
-    ;; each line is a list?
-    (map (lambda (line)
-      (set! line (shorten-line line))
-      (printf "~s~n" (length (cdr line)))
-
-      (when (and
-        (< 0 (length (cdr line)))
-        (not (list? (cddr line))))
-          (printf "~s~n" (caadr line))
-      )
-    )program)
-)
 
 ;; function-table
 ;; associated with the 6 functions in statements
@@ -108,10 +56,10 @@
 (define (function-put! key value)
     (hash-set! *function-table* key value))
 (for-each
-  (lambda (pair) (function-put! function-table (car pair) (cadr pair)))
+  (lambda (pair) (function-put! (car pair) (cadr pair)))
   '(
     ;; functions
-    (dim  ,ft_dim)
+    (dim ,ft_dim)
     (let  ,f_let)
     (print  ,ft_print)
     (input  ,ft_input)
@@ -126,7 +74,7 @@
 (define (variable-put! key value)
     (hash-set! *variable-table* key value))
 (for-each
-  (lambda (pair) (variable-put! variable-table (car pair) (cadr pair)))
+  (lambda (pair) (variable-put! (car pair) (cadr pair)))
   '(
     ;; variables
     (log10_2 0.301029995663981195213738894724493026768189881)
@@ -138,7 +86,7 @@
     (mod     ,(lambda (x y) (- x (* (div x y) y))))
     (quot    ,(lambda (x y) (truncate (/ x y))))
     (rem     ,(lambda (x y) (- x (* (quot x y) y))))
-    (<>      ,(lambda (x y) (not(= x y)))
+    (<>      ,(lambda (x y) (not(= x y))))
     (+       ,+)
     (-       ,-)
     (*       ,*)
@@ -189,6 +137,60 @@
                 ))) program)
 )
 
+
+;; SBIR Statements
+
+;;(define (dim-statement args))
+
+;;(define ())
+
+(define (shorten-line line)
+  (printf "~s~n" line)
+
+  (if (< 2 (length line))
+     (shorten-line (cdr line))
+     line
+  )
+)
+
+(define (add-labels program)
+    (map
+        (lambda (line)
+            (when
+                (or (= 3 (length line))
+                    (and (= 2 (length line))
+                        (not (list? (cadr line)))
+                    )
+                )
+                (printf "~n~s is label ~s ~n" (cadr line) (car line))
+                (when (< 1 (length (cdr line)))
+                  (printf "~n~s" (caaddr line))
+                )
+                (hash-set! *label-table* (cadr line) (car line))
+
+            )
+        )
+            program
+    )
+)
+
+(define (write-program-by-line filename program)
+    (printf "==================================================~n")
+    (printf "~a: ~s~n" *run-file* filename)
+    (printf "==================================================~n")
+    ;; each line is a list?
+    (map (lambda (line)
+      (set! line (shorten-line line))
+      (printf "~s~n" (length (cdr line)))
+
+      (when (and
+        (< 0 (length (cdr line)))
+        (not (list? (cddr line))))
+          (printf "~s~n" (caadr line))
+      )
+    )program)
+)
+
 ;; take in a program list and then interpret line by line
 
 ;; take in a program list and then interpret line by line
@@ -199,8 +201,8 @@
         (usage-exit)
         (let* ((sbprogfile (car arglist))
                (program (readlist-from-inputfile sbprogfile)))
-              ;;(add-labels program)
-              (write-program-by-line sbprogfile program)
+              (add-labels program)
+              ;;(write-program-by-line sbprogfile program)
 
         )
     )
