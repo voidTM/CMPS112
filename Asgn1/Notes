@@ -1,0 +1,22 @@
+Notes
+  SBIR assumes that certain things are intuitively obvious
+  2 data types
+    strings and real numbers
+    Strings: print statements
+      no such variables
+    All var are real numbers;
+
+
+Operations:
+  Reads in from a file specified in argument list
+    no options
+    assume all arguments in list are files to be read
+  stores data into a list
+  interpret representation
+    numbers are read from stdin
+    results printed to stdout
+    error to stderr
+      any error will force program to exit(1)
+
+  Top down variation of Backus-Naur Form,
+  
