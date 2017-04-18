@@ -106,9 +106,9 @@
 ;; associated with the 6 functions in statements
 (define *function-table* (make-hash))
 (define (function-put! key value)
-    (function-put! *function-table* key value))
+    (hash-set! *function-table* key value))
 (for-each
-  (lambda (pair) (hash-set! function-table (car pair) (cadr pair)))
+  (lambda (pair) (function-put! function-table (car pair) (cadr pair)))
   '(
     ;; functions
     (dim  ,ft_dim)
