@@ -96,7 +96,6 @@
     (printf "==================================================~n")
     ;; each line is a list?
     (map (lambda (line)
-      ;;(printf "~s~n" line)
       (printf "~s~n" (length line))
       (cond
          ;;presume that there needs two expressions to be evaluated
@@ -104,9 +103,6 @@
           (printf "~s~n" (caaddr line)))
 
         ;; presume only 1 expression to be evaluated
-        ;;((= 2 (length line))
-          ;;(printf "~s~n" (caadr line))
-        ;;)
         ((and (= 2 (length line)) (list? (cadr line)))
           (printf "~s~n" (caadr line)))
       )

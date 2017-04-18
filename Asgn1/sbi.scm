@@ -144,8 +144,22 @@
 
 ;;(define ())
 
+;; given a line find the inner most statement
+(define (get-statement line)
+
+  (cond
+    ;;presume that there needs two expressions to be evaluated
+    ((= 3 (length line))
+      (printf "~s~n" (caaddr line)))
+
+      ;; presume only 1 expression to be evaluated
+      ((and (= 2 (length line)) (list? (cadr line)))
+      (printf "~s~n" (caadr line)))
+    )
+)
+
 (define (shorten-line line)
-  (printf "~s~n" line)
+  ;;(printf "~s~n" line)
 
   (if (< 2 (length line))
      (shorten-line (cdr line))
@@ -180,15 +194,9 @@
     (printf "==================================================~n")
     ;; each line is a list?
     (map (lambda (line)
-      (set! line (shorten-line line))
-      (printf "~s~n" (length (cdr line)))
-
-      (when (and
-        (< 0 (length (cdr line)))
-        (not (list? (cddr line))))
-          (printf "~s~n" (caadr line))
+      (get-statement line)
       )
-    )program)
+    program)
 )
 
 ;; take in a program list and then interpret line by line
@@ -202,7 +210,7 @@
         (let* ((sbprogfile (car arglist))
                (program (readlist-from-inputfile sbprogfile)))
               (add-labels program)
-              ;;(write-program-by-line sbprogfile program)
+              (write-program-by-line sbprogfile program)
 
         )
     )
