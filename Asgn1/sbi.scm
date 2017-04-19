@@ -176,8 +176,8 @@
     (begin
       (vector-set! (hash-ref *variable-table* (caar expr))
         (- (inexact->exact (eval-args (cadar expr))) 1)
-          (eval-args (cadar expr)))
-        (variable-put! (caar expr) (hash-ref *variable-table* (caar expr)))
+          (eval-args (cadr expr)))
+        ;;(variable-put! (caar expr) (hash-ref *variable-table* (caar expr)))
     )
     ;; if only a varialbe
     (variable-put!  
@@ -188,9 +188,8 @@
   
   ;;(printf "~s~n" (eval-args (cadr expr)))
 
-  ;;(printf "~s~n" (car expr))
-  ;;(printf "~s~n" (eval-args (cadr expr)))
-  ;(;;printf "~s~n" expr)
+  ;;(printf "~s~n" expr)
+  ;;(printf "~s~n" (eval-args (car expr)))
   ;;(printf "~s~n" (hash-ref *variable-table* (car expr)))
 )
 
@@ -245,10 +244,13 @@
 
 ;; HELPER FUNCTIONS
 
+;; parses and evaluates various arguments
+;; and then return the appropriate value if 
+;; known
 (define (eval-args argv)
   ;;(printf "~s~n" argv)
   (cond
-    
+    ;; Return numbers as decimals
     ((number? argv) (+ 0.0 argv))
     
     ;; get from from variable table
@@ -257,13 +259,14 @@
       (hash-ref *variable-table* argv)
     )
 
-    ;; return value within an array
+    ;; fetches the appropriate element within an array
     ((and (pair? argv) (hash-has-key? *variable-table* (car argv)))
         ;;(printf "~s~n" (hash-ref *variable-table* (car argv)))
         (vector-ref (hash-ref *variable-table* (car argv))
         (- (inexact->exact (eval-args (cadr argv))) 1))
     )
 
+    ;; Get the rest of the expression and then compute
     ((pair? argv)
       (apply (hash-ref *function-table* (car argv))
         (map eval-args (cdr argv))

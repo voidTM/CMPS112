@@ -18,4 +18,6 @@
 (    7          (dim (a 10)))
 (    8          (let (a i) 9))
 (    9          (print (a i)))
+(	 10			(let (a i) 10))
+(    11         (print (a i)))
 )
