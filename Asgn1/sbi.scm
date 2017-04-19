@@ -1,6 +1,8 @@
 #!/afs/cats.ucsc.edu/courses/cmps112-wm/usr/racket/bin/mzscheme -qr
 ;; $Id: sbi.scm,v 1.3 2016-09-23 18:23:20-07 - - $
-;;
+;; AUTHORS: 
+;; Sam Song(sasong@ucsc.edu)
+;; Edward()
 ;; NAME
 ;;    sbi.scm - silly basic interpreter
 ;;
@@ -36,6 +38,12 @@
 ;; prints list then dies?
 (define (die list)
     (for-each (lambda (item) (display item *stderr*)) list)
+    (newline *stderr*)
+    (exit 1)
+)
+
+(define (failedLine line)
+  (display line *stderr*)
     (newline *stderr*)
     (exit 1)
 )
@@ -159,13 +167,16 @@
 
 ;; inserts the a variable into the variable table with its value
 (define (ft_let expr)
+  ;;(printf "~s~n" (eval-args (car expr)))
   (variable-put!  
     (eval-args (car expr))
     (eval-args (cadr expr))
   )
-  (printf "~s~n" (car expr))
+  
+  ;;(printf "~s~n" (car expr))
   ;;(printf "~s~n" (eval-args (cadr expr)))
-  (printf "~s~n" (hash-ref *variable-table* (eval-args (car expr)))
+  (printf "~s~n" expr)
+  ;;(printf "~s~n" (hash-ref *variable-table* (car expr)))
 )
 
 
@@ -225,13 +236,15 @@
     
     ((number? argv) (+ 0.0 argv))
     
-
+    ;; get from from variable table
     ((hash-has-key? *variable-table* argv) 
-      (printf "~s~n" (hash-ref *variable-table* argv))
+      ;;(printf "~s~n" (hash-ref *variable-table* argv))
       (hash-ref *variable-table* argv)
     )
-    ;; return array?
+
+    ;; return value within an array
     ((and (pair? argv) (hash-has-key? *variable-table* (car argv)))
+        (printf "~s~n" (hash-ref *variable-table* (car argv)))
         (vector-ref (hash-ref *variable-table* (car argv))
         (- (inexact->exact (eval-args (cadr argv))) 1))
     )
@@ -304,7 +317,6 @@
     (floor   ,floor)
     (log     ,log)
     (sqrt    ,sqrt)
-
   )
 )
 
