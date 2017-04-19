@@ -61,8 +61,13 @@
 
 (define (ft_dim expr)
   (set! expr (car expr))
-  (let ((arr (make-vector (inexact->exact (eval-hash (cadr expr))) (car expr))))
-  (function-put! (car expr) (+ (eval-hash (cadr expr)) 1 ))))
+  (let
+    ((arr
+      (make-vector (inexact->exact (eval-hash (cadr expr)))
+      (car expr))))
+    '()
+  )
+  (function-put! (car expr) (+ (eval-hash (cadr expr)) 1 )))
 
 (define (ft_let expr)
   (function-put! (car expr) (eval-hash (cadr expr))))
@@ -83,7 +88,7 @@
   (function-put! 'inputcount 0)
   (if(null? (car expr))
     (function-put! 'inputcount -1)
-    (begin 
+    (begin
     (function-put! 'inputcount (ft_input2 expr 0))))
   )
 
