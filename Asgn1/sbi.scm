@@ -165,26 +165,32 @@
   ;;(printf "~s~n" (hash-ref *variable-table* (car expr)))
 )
 
+
+
 ;; inserts the a variable into the variable table with its value
 (define (ft_let expr)
   ;;(printf "~s~n" (eval-args (car expr)))
   ;; Check to see if variable is array
-  if((pair? (car expr))
-    (
-      (vector-set (hash-ref *variable-table* (caar expr))
-        (- (inexact->exact (eval-args (cadr expr))) 1))
-          (evalexpr (cadr expr)))
-        (variable-put! (caar expr) (variable-get! (caar expr)))
+  (if (pair? (car expr))
+    ;; if array element get and set element of array before pushing to variable table
+    (begin
+      (vector-set! (hash-ref *variable-table* (caar expr))
+        (- (inexact->exact (eval-args (cadar expr))) 1)
+          (eval-args (cadar expr)))
+        (variable-put! (caar expr) (hash-ref *variable-table* (caar expr)))
     )
+    ;; if only a varialbe
     (variable-put!  
-      (eval-args (car expr))
+      (car expr)
       (eval-args (cadr expr))
     )
   )
   
+  ;;(printf "~s~n" (eval-args (cadr expr)))
+
   ;;(printf "~s~n" (car expr))
   ;;(printf "~s~n" (eval-args (cadr expr)))
-  (printf "~s~n" expr)
+  ;(;;printf "~s~n" expr)
   ;;(printf "~s~n" (hash-ref *variable-table* (car expr)))
 )
 
@@ -229,7 +235,7 @@
   ;;(printf "~s~n" (car argv))
   (when (eval-args(car argv))
     ;; if true pass label to goto
-    (newline)
+    ;;(newline)
 
     ;;(printf "~s~n" (car argv))
     ;;(printf "~s~n" (cadr argv))
@@ -253,7 +259,7 @@
 
     ;; return value within an array
     ((and (pair? argv) (hash-has-key? *variable-table* (car argv)))
-        (printf "~s~n" (hash-ref *variable-table* (car argv)))
+        ;;(printf "~s~n" (hash-ref *variable-table* (car argv)))
         (vector-ref (hash-ref *variable-table* (car argv))
         (- (inexact->exact (eval-args (cadr argv))) 1))
     )
