@@ -57,7 +57,8 @@
 )
 
 (define (ft_print expr)
-  (map (lambda (x) (display(eval-hash x)))) )
+  (map (lambda (x) (display(eval-hash x))) expr)
+   (newline))
 
 (define (ft_dim expr)
   (set! expr (car expr))
@@ -88,7 +89,7 @@
   )
 
 
-;; function-table
+;; function-tablegit 
 ;; associated with the 6 functions in statements
 (define *function-table* (make-hash))
 (define (function-put! key value)
