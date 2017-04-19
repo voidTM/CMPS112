@@ -209,14 +209,19 @@
 
 (define (eval-args argv)
   (cond
+    
     ((number? argv) (+ 0.0 argv))
-    ;;(arg)
+    
+
     ((hash-has-key? *variable-table* argv) 
       (hash-ref *variable-table* argv)
     )
+    ;; return array?
     ((and (pair? argv) (hash-has-key? *variable-table* (car argv)))
         (vector-ref (hash-ref *variable-table* (car argv))
-        (- (inexact->exact (eval-args (cadr argv))) 1)))
+        (- (inexact->exact (eval-args (cadr argv))) 1))
+    )
+
     ((pair? argv)
       (apply (hash-ref *function-table* (car argv))
         (map eval-args (cdr argv))
@@ -253,22 +258,6 @@
     (input , ft_input)
     (goto , ft_goto)
     (if , ft_if)
-  )
-)
-
-;; variable-table
-;; functions are included
-(define *variable-table* (make-hash))
-(define (variable-put! key value)
-    (hash-set! *variable-table* key value))
-(for-each
-  (lambda (pair) (variable-put! (car pair) (cadr pair)))
-  `(
-    ;; variables
-    (log10_2 0.301029995663981195213738894724493026768189881)
-    (sqrt_2  1.414213562373095048801688724209698078569671875)
-    (e       2.718281828459045235360287471352662497757247093)
-    (pi      3.141592653589793238462643383279502884197169399)
     (div     ,(lambda (x y) (floor (/ x y))))
     (log10   ,(lambda (x) (/ (log x) (log 10.0))))
     (mod     ,(lambda (x y) (- x (* (div x y) y))))
@@ -301,6 +290,23 @@
     (floor   ,floor)
     (log     ,log)
     (sqrt    ,sqrt)
+
+  )
+)
+
+;; variable-table
+;; functions are included
+(define *variable-table* (make-hash))
+(define (variable-put! key value)
+    (hash-set! *variable-table* key value))
+(for-each
+  (lambda (pair) (variable-put! (car pair) (cadr pair)))
+  `(
+    ;; variables
+    (log10_2 0.301029995663981195213738894724493026768189881)
+    (sqrt_2  1.414213562373095048801688724209698078569671875)
+    (e       2.718281828459045235360287471352662497757247093)
+    (pi      3.141592653589793238462643383279502884197169399)
   )
 )
 
