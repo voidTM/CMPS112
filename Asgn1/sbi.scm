@@ -103,7 +103,7 @@
                 )
             )
             ;;(printf "~n~s is label ~s ~n" (cadr line) (car line))
-            (hash-set! *label-table* (cadr line) (car line))
+            (hash-set! *label-table* (cadr line) (- (car line) 1 ))
             ;;(printf "~n~s" (hash->list *label-table*))
           )
         )
@@ -121,6 +121,13 @@
   (when (< 0 (length program))
     (get-statement (car program))
     ;; Check for changes to the program counter by jumps/gotos
+
+    (when (not (= program-counter line-count))
+      (set! program (move-to-line program-list program-counter 1))
+      (set! line-count program-counter)
+      ;;(map (lambda (line) (printf "~s~n" line)) program)
+      ;;(newline)
+    )
 
     ;; increment current program counter and index to next line
     (interpret-program (cdr program) (+ line-count 1))
@@ -175,6 +182,7 @@
 ;; for now presume that there is only 1 arguement for goto
 
 (define (ft_goto argv)
+  ;;(printf "~s~n" (hash->list *label-table*))
   (set! program-counter (hash-ref *label-table* (car argv)))
 )
 
@@ -192,6 +200,8 @@
 
 ;; operate on gotos
 (define (move-to-line program linenr currLine)
+  ;;(printf "~s~n" linenr)
+  ;;(printf "~s~n" currLine)
   (if ( < currLine linenr)
     (move-to-line (cdr program) linenr (+ currLine 1))
     program
@@ -284,7 +294,7 @@
             (when (or (= 3 (length line))
                       (and (= 2 (length line))
                            (not (list? (cadr line)))))
-                (hash-set! *label-table* (cadr line) (- (car line) 1 ))
+                (hash-set! *label-table* (cadr line)  (- (car line) 1 ))
                 ))) program)
 )
 
