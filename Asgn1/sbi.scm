@@ -137,6 +137,7 @@
 
 ;; SBIR Statements
 
+;; prints every of a line preceeding the print
 (define (ft_print expr)
   (map (lambda (x)
     (display x
@@ -145,18 +146,27 @@
    (newline)
 )
 
+;; creates an array
 (define (ft_dim expr)
   (set! expr (car expr))
-  (let
-    ((arr
-      (make-vector (inexact->exact (eval-hash (cadr expr)))
-      (car expr))))
-    (variable-put! (car expr) (+ (eval-hash (cadr expr)) 1 ))
+  (printf "~s~n" (car expr))
+  (variable-put! (car expr)  
+    (make-vector 
+      (inexact->exact (eval-args(cadr expr)))
+    )
   )
+  ;;(printf "~s~n" (hash-ref *variable-table* (car expr)))
 )
 
+;; inserts the a variable into the variable table with its value
 (define (ft_let expr)
-  (function-put! (car expr) (eval-hash (cadr expr))))
+  ;(function-put! (car expr) (eval-hash (cadr expr)))
+  (printf "~s~n" (car expr))
+  (printf "~s~n" (cadr expr))
+
+  (variable-put! (car expr) (cdr expr))
+)
+
 
 (define (ft_input2 expr count)
   (if(null? expr)
@@ -181,24 +191,34 @@
 ;; resets the program counter to the label value
 ;; for now presume that there is only 1 arguement for goto
 
-(define (ft_goto argv)
+(define (ft_goto label)
   ;;(printf "~s~n" (hash->list *label-table*))
-  (set! program-counter (hash-ref *label-table* (car argv)))
+  (set! program-counter (hash-ref *label-table* (car label)))
 )
 
+;; Presumes the format if (var expr expr) label
+(define (ft_if argv)
+  (when (eval-args(car argv))
+    ;; if true pass label to goto
+    (ft_goto (cdr argv))
+  )
+)
 
 ;; HELPER FUNCTIONS
 
 (define (eval-args argv)
   (cond
     ((number? argv) (+ 0.0 argv))
-
-    ((pair? argv) (eval-args (cdr argv)))
+    
+    ((pair? argv)
+      (eval-args (car argv))
+      (eval-args (cdr argv))
+    )
     (else argv)
   )
 )
 
-;; operate on gotos
+;; move to line as specified from the initial line of 0
 (define (move-to-line program linenr currLine)
   ;;(printf "~s~n" linenr)
   ;;(printf "~s~n" currLine)
