@@ -148,7 +148,7 @@
 ;; creates an array
 (define (ft_dim expr)
   (set! expr (car expr))
-  (printf "~s~n" (car expr))
+  ;;(printf "~s~n" (car expr))
   (variable-put! (car expr)  
     (make-vector 
       (inexact->exact (eval-args(cadr expr)))
@@ -159,11 +159,13 @@
 
 ;; inserts the a variable into the variable table with its value
 (define (ft_let expr)
-  ;(function-put! (car expr) (eval-hash (cadr expr)))
-  ;;(printf "~s~n" (car expr))
-  ;;(printf "~s~n" (cadr expr))
-  (variable-put! (car expr) (cadr expr))
-  (variable-put! (car expr) (cdr expr))
+  (variable-put!  
+    (eval-args (car expr))
+    (eval-args (cadr expr))
+  )
+  (printf "~s~n" (car expr))
+  ;;(printf "~s~n" (eval-args (cadr expr)))
+  (printf "~s~n" (hash-ref *variable-table* (eval-args (car expr)))
 )
 
 
@@ -176,31 +178,41 @@
         (begin
           (variable-put! (car expr) input)
           (set! count (+ 1 count))
-          (ft_input2 (cdr expr) count)))))
+          (ft_input2 (cdr expr) count)
+        )
+      )
+    )
   )
+)
 
 (define (ft_input expr)
   (variable-put! 'inputcount 0)
   (if(null? (car expr))
     (variable-put! 'inputcount -1)
     (begin
-    (variable-put! 'inputcount (ft_input2 expr 0))))
+      (variable-put! 'inputcount (ft_input2 expr 0))
+    )
   )
+)
 
 ;; resets the program counter to the label value
 ;; for now presume that there is only 1 arguement for goto
 
 (define (ft_goto label)
+  ;;(printf "~s~n" label)
   ;;(printf "~s~n" (hash->list *label-table*))
   (set! program-counter (hash-ref *label-table* (car label)))
 )
 
 ;; Presumes the format if (var expr expr) label
 (define (ft_if argv)
+  ;;(printf "~s~n" (car argv))
   (when (eval-args(car argv))
     ;; if true pass label to goto
-    (printf "~s~n" (car argv))
-    (printf "~s~n" (cadr argv))
+    (newline)
+
+    ;;(printf "~s~n" (car argv))
+    ;;(printf "~s~n" (cadr argv))
     (ft_goto (cdr argv))
   )
 )
@@ -208,12 +220,14 @@
 ;; HELPER FUNCTIONS
 
 (define (eval-args argv)
+  ;;(printf "~s~n" argv)
   (cond
     
     ((number? argv) (+ 0.0 argv))
     
 
     ((hash-has-key? *variable-table* argv) 
+      (printf "~s~n" (hash-ref *variable-table* argv))
       (hash-ref *variable-table* argv)
     )
     ;; return array?
