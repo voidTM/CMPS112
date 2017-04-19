@@ -181,7 +181,7 @@
 
 ;; TABLES
 
-;; function-tablegit 
+;; function-tablegit
 ;; associated with the 6 functions in statements
 (define *function-table* (make-hash))
 (define (function-put! key value)
@@ -194,7 +194,7 @@
     (let , ft_let)
     (print , ft_print)
     (input , ft_input)
-    (goto , ft_goto)
+    (goto , (void))
     (if (void))
   )
 )
