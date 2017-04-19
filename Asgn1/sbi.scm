@@ -96,7 +96,7 @@
     (hash-set! *function-table* key value))
 (for-each
   (lambda (pair) (function-put! (car pair) (cadr pair)))
-  '(
+  `(
     ;; functions
     (dim ,ft_dim)
     (let  ,ft_let)
@@ -114,7 +114,7 @@
     (hash-set! *variable-table* key value))
 (for-each
   (lambda (pair) (variable-put! (car pair) (cadr pair)))
-  '(
+  `(
     ;; variables
     (log10_2 0.301029995663981195213738894724493026768189881)
     (sqrt_2  1.414213562373095048801688724209698078569671875)
