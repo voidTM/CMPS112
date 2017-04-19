@@ -49,6 +49,37 @@
     )
 )
 
+(define (ft_print expr)
+  (map (lambda (x) (display(eval-hash x)))) )
+
+(define (ft_dim expr)
+  (set! expr (car expr))
+  (let (arr (make-vector (inexact->exact (eval-hash(cadr expr))))))
+  (function-put! (car expr) (+ (eval-hash (cadr expr)) 1 )))
+
+(define (ft_let expr)
+  (function-put! (car expr) (eval-hash (cadr expr))))
+
+(define (ft_input2 expr count)
+  (if(null? expr)
+    count
+    (let ((input (read)))
+      (if (eof-object? input)
+        -1
+        (begin
+          (function-put! (car expr) input)
+          (set! count (+ 1 count))
+          (ft_input2 (cdr expr) count)))))
+  )
+
+(define (ft_input expr)
+  (function-put! 'inputcount 0)
+  (if(null? (car expr))
+    (function-put! 'inputcount -1)
+    (begin 
+    (function-put! 'inputcount (ft_input2 expr 0))))
+  )
+
 
 ;; function-table
 ;; associated with the 6 functions in statements
@@ -60,7 +91,7 @@
   '(
     ;; functions
     (dim ,ft_dim)
-    (let  ,f_let)
+    (let  ,ft_let)
     (print  ,ft_print)
     (input  ,ft_input)
     (goto (void))
