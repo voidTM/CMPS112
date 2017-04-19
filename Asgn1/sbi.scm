@@ -56,6 +56,79 @@
     )
 )
 
+;; PROGRAM MOVEMENT
+
+(define (run-function func-name argv)
+  ((hash-ref *function-table* func-name) argv)
+)
+
+;; given a line find the inner most statement
+(define (get-statement line)
+  (cond
+    ;;presume that there needs two expressions to be evaluated
+    ((= 3 (length line))
+      (run-function (caaddr line) (cdaddr line))
+
+      (printf "~s~n" (caaddr line))
+    )
+
+      ;; presume only 1 expression to be evaluated
+    ((and (= 2 (length line)) (list? (cadr line)))
+      (run-function (caadr line) (cdadr line))
+      (printf "~s~n" (caadr line))
+      (printf "~s~n" (cdadr line))
+    )
+    )
+)
+
+(define (shorten-line line)
+  ;;(printf "~s~n" line)
+
+  (if (< 2 (length line))
+     (shorten-line (cdr line))
+     line
+  )
+)
+
+
+;; Goes through the file looking for labels
+;; then addes them to the label tabel
+(define (add-labels program)
+    (map
+        (lambda (line)
+          (when
+            (or (= 3 (length line))
+                (and (= 2 (length line))
+                  (not (list? (cadr line)))
+                )
+            )
+            (printf "~n~s is label ~s ~n" (cadr line) (car line))
+            (hash-set! *label-table* (cadr line) (car line))
+          )
+        )
+    program
+    )
+)
+
+
+;; tail end recursive implimentation or indexing through?
+;; status recursion working normally
+;; add goto part
+(define (interpret-program program line-count)
+  (printf "~s~n" line-count)
+  (set! program-counter line-count)
+  (when (< 0 (length program))
+    (get-statement (car program))
+    ;; Check for changes to the program counter by jumps/gotos
+
+    ;; increment current program counter and index to next line
+    (interpret-program (cdr program) (+ line-count 1))
+  )
+)
+
+
+;; SBIR Statements
+
 (define (ft_print expr)
   (map (lambda (x) (display(eval-hash x)))) )
 
@@ -65,9 +138,9 @@
     ((arr
       (make-vector (inexact->exact (eval-hash (cadr expr)))
       (car expr))))
-    '()
+    (variable-put! (car expr) (+ (eval-hash (cadr expr)) 1 ))
   )
-  (function-put! (car expr) (+ (eval-hash (cadr expr)) 1 )))
+)
 
 (define (ft_let expr)
   (function-put! (car expr) (eval-hash (cadr expr))))
@@ -79,19 +152,33 @@
       (if (eof-object? input)
         -1
         (begin
-          (function-put! (car expr) input)
+          (variable-put! (car expr) input)
           (set! count (+ 1 count))
           (ft_input2 (cdr expr) count)))))
   )
 
 (define (ft_input expr)
-  (function-put! 'inputcount 0)
+  (variable-put! 'inputcount 0)
   (if(null? (car expr))
-    (function-put! 'inputcount -1)
+    (variable-put! 'inputcount -1)
     (begin
-    (function-put! 'inputcount (ft_input2 expr 0))))
+    (variable-put! 'inputcount (ft_input2 expr 0))))
   )
 
+;;(define (ft_goto argv))
+
+
+;; HELPER FUNCTIONS
+
+;; operate on gotos
+(define (move-to-line program linenr currLine)
+  (if ( < currLine linenr)
+    (move-to-line (cdr program) linenr (+ currLine 1))
+    program
+  )
+)
+
+;; TABLES
 
 ;; function-table
 ;; associated with the 6 functions in statements
@@ -102,11 +189,11 @@
   (lambda (pair) (function-put! (car pair) (cadr pair)))
   '(
     ;; functions
-    (dim ,ft_dim)
-    (let  ,ft_let)
-    (print  ,ft_print)
-    (input  ,ft_input)
-    (goto (void))
+    (dim , ft_dim)
+    (let , ft_let)
+    (print , ft_print)
+    (input , ft_input)
+    (goto , ft_goto)
     (if (void))
   )
 )
@@ -181,78 +268,6 @@
 )
 
 
-;; SBIR Statements
-
-;;(define (dim-statement args))
-
-;;(define ())
-
-;; given a line find the inner most statement
-(define (get-statement line)
-  (cond
-    ;;presume that there needs two expressions to be evaluated
-    ((= 3 (length line))
-      (printf "~s~n" (caaddr line)))
-
-      ;; presume only 1 expression to be evaluated
-    ((and (= 2 (length line)) (list? (cadr line)))
-      (printf "~s~n" (caadr line))
-      (printf "~s~n" (cdadr line)))
-    )
-)
-
-(define (shorten-line line)
-  ;;(printf "~s~n" line)
-
-  (if (< 2 (length line))
-     (shorten-line (cdr line))
-     line
-  )
-)
-
-
-;; Goes through the file looking for labels
-;; then addes them to the label tabel
-(define (add-labels program)
-    (map
-        (lambda (line)
-          (when
-            (or (= 3 (length line))
-                (and (= 2 (length line))
-                  (not (list? (cadr line)))
-                )
-            )
-            (printf "~n~s is label ~s ~n" (cadr line) (car line))
-            (hash-set! *label-table* (cadr line) (car line))
-          )
-        )
-    program
-    )
-)
-
-;; operate on gotos
-(define (move-to-line program linenr currLine)
-  (if ( < currLine linenr)
-    (move-to-line (cdr program) linenr (+ currLine 1))
-    program
-  )
-)
-
-;; tail end recursive implimentation or indexing through?
-;; status recursion working normally
-;; add goto part
-(define (interpret-program program line-count)
-  (printf "~s~n" line-count)
-  (set! program-counter line-count)
-  (when (< 0 (length program))
-    (get-statement (car program))
-    ;; Check for changes to the program counter by jumps/gotos
-
-    ;; increment current program counter and index to next line
-    (interpret-program (cdr program) (+ line-count 1))
-  )
-)
-
 (define (main arglist)
     (if (or (null? arglist) (not (null? (cdr arglist))))
         (usage-exit)
@@ -260,7 +275,6 @@
                (program (readlist-from-inputfile sbprogfile)))
               (set! program-list program)
               (add-labels program)
-              ;;(write-program-by-line sbprogfile program)
               (interpret-program program 0)
 
         )
