@@ -140,8 +140,7 @@
 ;; prints every of a line preceeding the print
 (define (ft_print expr)
   (map (lambda (x)
-    (display x
-    )
+    (display (eval-args x))
   ) expr)
    (newline)
 )
@@ -200,6 +199,8 @@
 (define (ft_if argv)
   (when (eval-args(car argv))
     ;; if true pass label to goto
+    (printf "~s~n" (car argv))
+    (printf "~s~n" (cadr argv))
     (ft_goto (cdr argv))
   )
 )
@@ -244,7 +245,7 @@
     (print , ft_print)
     (input , ft_input)
     (goto , ft_goto)
-    (if , ft_goto)
+    (if , ft_if)
   )
 )
 
