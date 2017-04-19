@@ -69,16 +69,16 @@
     ((= 3 (length line))
       (run-function (caaddr line) (cdaddr line))
 
-      (printf "~s~n" (caaddr line))
+      ;;(printf "~s~n" (caaddr line))
     )
 
       ;; presume only 1 expression to be evaluated
     ((and (= 2 (length line)) (list? (cadr line)))
       (run-function (caadr line) (cdadr line))
-      (printf "~s~n" (caadr line))
-      (printf "~s~n" (cdadr line))
+      ;;(printf "~s~n" (caadr line))
+      ;;(printf "~s~n" (cdadr line))
     )
-    )
+  )
 )
 
 (define (shorten-line line)
@@ -102,8 +102,9 @@
                   (not (list? (cadr line)))
                 )
             )
-            (printf "~n~s is label ~s ~n" (cadr line) (car line))
+            ;;(printf "~n~s is label ~s ~n" (cadr line) (car line))
             (hash-set! *label-table* (cadr line) (car line))
+            ;;(printf "~n~s" (hash->list *label-table*))
           )
         )
     program
@@ -115,7 +116,7 @@
 ;; status recursion working normally
 ;; add goto part
 (define (interpret-program program line-count)
-  (printf "~s~n" line-count)
+  ;;(printf "~s~n" line-count)
   (set! program-counter line-count)
   (when (< 0 (length program))
     (get-statement (car program))
@@ -130,8 +131,12 @@
 ;; SBIR Statements
 
 (define (ft_print expr)
-  (map (lambda (x) (display(eval-hash x))) expr)
-   (newline))
+  (map (lambda (x)
+    (display x
+    )
+  ) expr)
+   (newline)
+)
 
 (define (ft_dim expr)
   (set! expr (car expr))
@@ -166,10 +171,24 @@
     (variable-put! 'inputcount (ft_input2 expr 0))))
   )
 
-;;(define (ft_goto argv))
+;; resets the program counter to the label value
+;; for now presume that there is only 1 arguement for goto
+
+(define (ft_goto argv)
+  (set! program-counter (hash-ref *label-table* (car argv)))
+)
 
 
 ;; HELPER FUNCTIONS
+
+(define (eval-args argv)
+  (cond
+    ((number? argv) (+ 0.0 argv))
+
+    ((pair? argv) (eval-args (cdr argv)))
+    (else argv)
+  )
+)
 
 ;; operate on gotos
 (define (move-to-line program linenr currLine)
@@ -194,8 +213,8 @@
     (let , ft_let)
     (print , ft_print)
     (input , ft_input)
-    (goto , (void))
-    (if (void))
+    (goto , ft_goto)
+    (if , ft_goto)
   )
 )
 
@@ -258,6 +277,7 @@
     (label-put! (car pair) (cadr pair)))
   `(
     ))
+
 (define (hash-labels program)
    (map (lambda (line)
           (when (not (null? line))
@@ -276,6 +296,7 @@
                (program (readlist-from-inputfile sbprogfile)))
               (set! program-list program)
               (add-labels program)
+              ;;(hash-labels program)
               (interpret-program program 0)
 
         )
