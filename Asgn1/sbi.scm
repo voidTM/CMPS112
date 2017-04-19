@@ -160,9 +160,9 @@
 ;; inserts the a variable into the variable table with its value
 (define (ft_let expr)
   ;(function-put! (car expr) (eval-hash (cadr expr)))
-  (printf "~s~n" (car expr))
-  (printf "~s~n" (cadr expr))
-
+  ;;(printf "~s~n" (car expr))
+  ;;(printf "~s~n" (cadr expr))
+  (variable-put! (car expr) (cadr expr))
   (variable-put! (car expr) (cdr expr))
 )
 
@@ -210,10 +210,17 @@
 (define (eval-args argv)
   (cond
     ((number? argv) (+ 0.0 argv))
-    
+    ;;(arg)
+    ((hash-has-key? *variable-table* argv) 
+      (hash-ref *variable-table* argv)
+    )
+    ((and (pair? argv) (hash-has-key? *variable-table* (car argv)))
+        (vector-ref (hash-ref *variable-table* (car argv))
+        (- (inexact->exact (eval-args (cadr argv))) 1)))
     ((pair? argv)
-      (eval-args (car argv))
-      (eval-args (cdr argv))
+      (apply (hash-ref *function-table* (car argv))
+        (map eval-args (cdr argv))
+      )
     )
     (else argv)
   )
