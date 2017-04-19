@@ -168,9 +168,18 @@
 ;; inserts the a variable into the variable table with its value
 (define (ft_let expr)
   ;;(printf "~s~n" (eval-args (car expr)))
-  (variable-put!  
-    (eval-args (car expr))
-    (eval-args (cadr expr))
+  ;; Check to see if variable is array
+  if((pair? (car expr))
+    (
+      (vector-set (hash-ref *variable-table* (caar expr))
+        (- (inexact->exact (eval-args (cadr expr))) 1))
+          (evalexpr (cadr expr)))
+        (variable-put! (caar expr) (variable-get! (caar expr)))
+    )
+    (variable-put!  
+      (eval-args (car expr))
+      (eval-args (cadr expr))
+    )
   )
   
   ;;(printf "~s~n" (car expr))
