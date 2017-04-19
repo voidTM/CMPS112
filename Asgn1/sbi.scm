@@ -16,6 +16,13 @@
 ;;    Jump table?
 ;;
 
+
+;; GLOBAL VARIABLES
+
+  ;; program index counter
+(define program-counter 0)
+(define program-list '())
+
 ;; OPERATIONS
 (define *stderr* (current-error-port))
 
@@ -175,8 +182,22 @@
 
 ;;(define ())
 
+;; given a line find the inner most statement
+(define (get-statement line)
+  (cond
+    ;;presume that there needs two expressions to be evaluated
+    ((= 3 (length line))
+      (printf "~s~n" (caaddr line)))
+
+      ;; presume only 1 expression to be evaluated
+    ((and (= 2 (length line)) (list? (cadr line)))
+      (printf "~s~n" (caadr line))
+      (printf "~s~n" (cdadr line)))
+    )
+)
+
 (define (shorten-line line)
-  (printf "~s~n" line)
+  ;;(printf "~s~n" line)
 
   (if (< 2 (length line))
      (shorten-line (cdr line))
@@ -194,9 +215,6 @@
                     )
                 )
                 (printf "~n~s is label ~s ~n" (cadr line) (car line))
-                (when (< 1 (length (cdr line)))
-                  (printf "~n~s" (caaddr line))
-                )
                 (hash-set! *label-table* (cadr line) (car line))
 
             )
@@ -205,35 +223,38 @@
     )
 )
 
-(define (write-program-by-line filename program)
-    (printf "==================================================~n")
-    (printf "~a: ~s~n" *run-file* filename)
-    (printf "==================================================~n")
-    ;; each line is a list?
-    (map (lambda (line)
-      (set! line (shorten-line line))
-      (printf "~s~n" (length (cdr line)))
-
-      (when (and
-        (< 0 (length (cdr line)))
-        (not (list? (cddr line))))
-          (printf "~s~n" (caadr line))
-      )
-    )program)
+;; operate on gotos
+(define (move-to-line program linenr currLine)
+  (if ( < currLine linenr)
+    (move-to-line (cdr program) linenr (+ currLine 1))
+    program
+  )
 )
 
-;; take in a program list and then interpret line by line
+;; tail end recursive implimentation or indexing through?
+;; status recursion working normally
+;; add goto part
+(define (interpret-program program line-count)
+  (printf "~s~n" line-count)
+  (set! program-counter line-count)
+  (when (< 0 (length program))
+    (get-statement (car program))
+    ;; Check for changes to the program counter by jumps/gotos
 
-;; take in a program list and then interpret line by line
-
+    ;; increment current program counter and index to next line
+    (interpret-program (cdr program) (+ line-count 1))
+  )
+)
 
 (define (main arglist)
     (if (or (null? arglist) (not (null? (cdr arglist))))
         (usage-exit)
         (let* ((sbprogfile (car arglist))
                (program (readlist-from-inputfile sbprogfile)))
+              (set! program-list program)
               (add-labels program)
               ;;(write-program-by-line sbprogfile program)
+              (interpret-program program 0)
 
         )
     )
