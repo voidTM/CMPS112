@@ -174,21 +174,23 @@
   )
 )
 
+
+;; Goes through the file looking for labels
+;; then addes them to the label tabel
 (define (add-labels program)
     (map
         (lambda (line)
-            (when
-                (or (= 3 (length line))
-                    (and (= 2 (length line))
-                        (not (list? (cadr line)))
-                    )
+          (when
+            (or (= 3 (length line))
+                (and (= 2 (length line))
+                  (not (list? (cadr line)))
                 )
-                (printf "~n~s is label ~s ~n" (cadr line) (car line))
-                (hash-set! *label-table* (cadr line) (car line))
-
             )
+            (printf "~n~s is label ~s ~n" (cadr line) (car line))
+            (hash-set! *label-table* (cadr line) (car line))
+          )
         )
-            program
+    program
     )
 )
 
