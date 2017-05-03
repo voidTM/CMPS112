@@ -48,7 +48,15 @@ module Bigint = struct
                    in  strcat ""
                        ((if sign = Pos then "" else "-") ::
                         (map string_of_int reversed))
-
+(*
+    let rec cmp list1 list2 = match (list1, list2) with
+        | list1, [], 0       -> list1
+        | [], list2, 0       -> list2
+        | list1, [], carry   -> add' list1 [carry] 0
+        | [], list2, carry   -> add' [carry] list2 0
+        | car1::cdr1, car2::cdr2, carry ->
+            let equality = car1 - car2 + (cmp cdr1 cdr2)
+*)
     let rec add' list1 list2 carry = match (list1, list2, carry) with
         | list1, [], 0       -> list1
         | [], list2, 0       -> list2
@@ -76,8 +84,18 @@ module Bigint = struct
         | [], list2, carry   -> add' [carry] list2 0
         | car1::cdr1, car2::cdr2, carry ->
           let res = car1 * car2 + carry
-          in  res mod radix :: add' cdr1 cdr2 (res / radix)
+          in  res mod radix :: mul' cdr1 cdr2 (res / radix)
 
+(*
+    let rec mul' (multiplier, powerof2, multiplicand') =
+    if powerof2 > multiplier
+    then multiplier, 0
+    else let remainder, product =
+             mul' (multiplier, double powerof2, double multiplicand')
+         in  if remainder < powerof2
+             then remainder, product
+             else remainder - powerof2, product + multiplicand'
+*)
 
     (* imported from mathfns-trace *)
     let rec power' (base, expt, result) = match expt with
@@ -99,12 +117,14 @@ module Bigint = struct
         then Bigint(neg1, sub' val1 val2 0)
         else Bigint(neg1, add' val1 val2 0)
 
-
     let mul (Bigint (neg1, val1)) (Bigint (neg2, val2)) =
         if neg1 = neg2
-            then Bigint(neg1, mul' val1 val2 0)
+            then Bigint (Pos, mul' val1 val2 0)
             (* positive * negative = negative *)
-        else Bigint (Neg, mul' val1 val2 0)
+        else if neg1 = Neg (* - * - = + *) 
+            then Bigint (Pos, mul' val1 val2 0)
+        else
+            Bigint (neg1, mul' val1 val2 0)
 
     let div = add
 
