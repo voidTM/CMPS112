@@ -1,0 +1,39 @@
+
+Read up on Reverse Polish Notation
+
+Implement the following dc functions : +-*/%^cdflps.
+	# # +: addition
+		pop 2 off stack add then push result
+	# # *: multiplication
+		pop 2 multiply push result precision dependent on
+		precision value
+	# # -: subtraction
+		pop 2 subtract push result
+	# # /: division
+		pop 2 divide (first/second) push result
+	# # %: mod
+		pop 2 comute remainder and push
+	# # ^: exponentiate
+		first is exponent and 2nd is base
+		fraction of exponent is ignored?
+	c: clear stack
+	d: duplicate value on top and push it
+	f: script file
+	l: ?
+	p: ?Print?
+	s: ?
+
+Think of everything as expressions
+	even variables are expressions as such it is impossible to change the value of an variable once set
+	
+	Goal 
+		Basic Arithmetic
+
+
+Stack_digit_recursion (stack)
+	digit = pop(stack)
+	return Stack_digit_recursion (stack) * 10 + digit
+
+Need to implement decimals.
+Possibly fix add to include addition of positive to  negative numbers
+Modify stack to single digits
