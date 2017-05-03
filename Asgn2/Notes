@@ -37,3 +37,5 @@ Stack_digit_recursion (stack)
 Need to implement decimals.
 Possibly fix add to include addition of positive to  negative numbers
 Modify stack to single digits
+
+:: constructs a list ex: a::[] a is the head of the list 

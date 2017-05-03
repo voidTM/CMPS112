@@ -61,12 +61,13 @@ module Bigint = struct
     (* broken algorithm unknown *)
     let rec sub' list1 list2 carry = match (list1, list2, carry) with
         | list1, [], 0       -> list1
-        | [], list2, 0       -> list2
-        | list1, [], carry   -> add' list1 [carry] 0
-        | [], list2, carry   -> add' [carry] list2 0
+        | [], list2, borrow  -> list2
+        | list1, [] , borrow -> (car list1) - borrow :: cdr list1
         | car1::cdr1, car2::cdr2, carry ->
-            let sum = car1 - car2 + carry
-            in  sum mod radix :: add' cdr1 cdr2 (sum / radix)
+            let res = car1 - car2 - carry
+            in if res < 0
+            then (res + 10) :: sub' cdr1 cdr2 1
+            else abs(res) :: sub' cdr1 cdr2 0
 
     let rec mul' list1 list2 carry = match (list1, list2, carry) with
         | list1, [], 0       -> list1
@@ -74,8 +75,8 @@ module Bigint = struct
         | list1, [], carry   -> add' list1 [carry] 0
         | [], list2, carry   -> add' [carry] list2 0
         | car1::cdr1, car2::cdr2, carry ->
-          let sum = car1 + car2 + carry
-          in  sum mod radix :: add' cdr1 cdr2 (sum / radix)
+          let res = car1 * car2 + carry
+          in  res mod radix :: add' cdr1 cdr2 (res / radix)
 
 
     (* imported from mathfns-trace *)
@@ -88,18 +89,22 @@ module Bigint = struct
     let add (Bigint (neg1, value1)) (Bigint (neg2, value2)) =
         if neg1 = neg2
         then Bigint (neg1, add' value1 value2 0)
-        else zero
+        else Bigint (neg2, sub' value1 value2 0)
         (* implement code over here to account for addiction of values with different signs *)
 
     let sub (Bigint (neg1, val1)) (Bigint (neg2, val2)) =
         (* the subtraction of two numbers when 
         signs are opposite is addition *)
-        if neg1 != neg2
-        then Bigint(neg1, add' val1 val2 0)
-        else Bigint(neg2, sub' val1 val2 0)
+        if neg1 = neg2
+        then Bigint(neg1, sub' val1 val2 0)
+        else Bigint(neg1, add' val1 val2 0)
 
 
-    let mul = add
+    let mul (Bigint (neg1, val1)) (Bigint (neg2, val2)) =
+        if neg1 = neg2
+            then Bigint(neg1, mul' val1 val2 0)
+            (* positive * negative = negative *)
+        else Bigint (Neg, mul' val1 val2 0)
 
     let div = add
 
