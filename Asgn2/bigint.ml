@@ -48,15 +48,34 @@ module Bigint = struct
                    in  strcat ""
                        ((if sign = Pos then "" else "-") ::
                         (map string_of_int reversed))
-(*
-    let rec cmp list1 list2 = match (list1, list2) with
-        | list1, [], 0       -> list1
-        | [], list2, 0       -> list2
-        | list1, [], carry   -> add' list1 [carry] 0
-        | [], list2, carry   -> add' [carry] list2 0
-        | car1::cdr1, car2::cdr2, carry ->
-            let equality = car1 - car2 + (cmp cdr1 cdr2)
+
+    (*
+* Trim off zeros from the end of a list.  If the list is a number
+* represented in reveerse order, this trims high-order digits, as
+* would be needed after a subtraction.
 *)
+
+    let trimzeros list =
+        let rec trimzeros' list' = match list' with
+        | []       -> []
+        | [0]      -> []
+        | car::cdr ->
+             let cdr' = trimzeros' cdr
+             in  match car, cdr' with
+                 | 0, [] -> []
+                 | car, cdr' -> car::cdr'
+        in trimzeros' list
+
+    (* compares the absolute values of two numbers*)
+    let rec cmp val1 val2 = match (val1, val2) with
+        | [], []     -> 0       (*Both lists empty (equal) return 0*)
+        | [], value2 -> -1
+        | value1, [] -> 1
+        | car1::cdr1, car2::cdr2 ->
+        let recval = cmp cdr1 cdr2
+            in recval * 10 + car1 - car2
+
+
     let rec add' list1 list2 carry = match (list1, list2, carry) with
         | list1, [], 0       -> list1
         | [], list2, 0       -> list2
@@ -66,7 +85,7 @@ module Bigint = struct
           let sum = car1 + car2 + carry
           in  sum mod radix :: add' cdr1 cdr2 (sum / radix)
 
-    (* broken algorithm unknown *)
+    (* Note will not work properly unles val1 > val2 *)
     let rec sub' list1 list2 carry = match (list1, list2, carry) with
         | list1, [], 0       -> list1
         | [], list2, borrow  -> list2
@@ -75,9 +94,9 @@ module Bigint = struct
             let res = car1 - car2 - carry
             in if res < 0
             then (res + 10) :: sub' cdr1 cdr2 1
-            else abs(res) :: sub' cdr1 cdr2 0
+            else (abs res) :: sub' cdr1 cdr2 0
 
-    let rec mul' list1 list2 carry = match (list1, list2, carry) with
+      let rec mul' list1 list2 carry = match (list1, list2, carry) with
         | list1, [], 0       -> list1
         | [], list2, 0       -> list2
         | list1, [], carry   -> add' list1 [carry] 0
@@ -87,13 +106,19 @@ module Bigint = struct
           in  res mod radix :: mul' cdr1 cdr2 (res / radix)
 
 (*
-    let rec mul' (multiplier, powerof2, multiplicand') =
+    let rec mul' multiplier powerof2 multiplicand' =
+        match ( )
+*)
+(*
+    let rec mul' multiplier powerof2 multiplicand' =
     if powerof2 > multiplier
     then multiplier, 0
     else let remainder, product =
-             mul' (multiplier, double powerof2, double multiplicand')
+             mul' multiplier (double powerof2) double multiplicand')
          in  if remainder < powerof2
              then remainder, product
+             (* else sub' remainder powerof2 0,
+             add' product multiplicand 0*)
              else remainder - powerof2, product + multiplicand'
 *)
 
@@ -106,26 +131,37 @@ module Bigint = struct
 
     let add (Bigint (neg1, value1)) (Bigint (neg2, value2)) =
         if neg1 = neg2
-        then Bigint (neg1, add' value1 value2 0)
-        else Bigint (neg2, sub' value1 value2 0)
+            then Bigint (neg1, add' value1 value2 0)
+        
+        else if (cmp value1 value2) > 0 
+            (* value 1 is larger *)
+            then Bigint (neg1, sub' value1 value2 0)
+        else (* value 2 is larger*)
+            Bigint (neg2, sub' value2 value1 0)
         (* implement code over here to account for addiction of values with different signs *)
 
     let sub (Bigint (neg1, val1)) (Bigint (neg2, val2)) =
         (* the subtraction of two numbers when 
         signs are opposite is addition *)
-        if neg1 = neg2
-        then Bigint(neg1, sub' val1 val2 0)
-        else Bigint(neg1, add' val1 val2 0)
+        if neg1 != neg2
+            then Bigint(neg1, add' val1 val2 0)
+        else if (cmp val1 val2) > 0
+            then Bigint(neg1, sub' val1 val2 0)
+        else
+            Bigint(neg2, sub' val2 val1 0)
 
-    let mul (Bigint (neg1, val1)) (Bigint (neg2, val2)) =
+    let mul = add
+        (*let _, product = mul' (val1, [1], val2)
+        in Bigint (Pos, product)*)
+(*
         if neg1 = neg2
-            then Bigint (Pos, mul' val1 val2 0)
+            then Bigint (Pos, mul' val1 [1] val2)
             (* positive * negative = negative *)
         else if neg1 = Neg (* - * - = + *) 
-            then Bigint (Pos, mul' val1 val2 0)
+            then Bigint (Pos, mul' val1 [1] val2)
         else
-            Bigint (neg1, mul' val1 val2 0)
-
+            Bigint (neg1, mul' val1 [1] val2)
+*)
     let div = add
 
     let rem = add
