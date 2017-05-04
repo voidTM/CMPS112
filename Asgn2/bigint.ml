@@ -125,6 +125,19 @@ module Bigint = struct
              (trimzeros(sub' remainder powerof2 0)),
              (add' product multiplicand' 0)
 
+
+    let rec divrem' dividend powerof2 divisor' =
+    if (cmp divisor' dividend) > 0
+    then [0], dividend
+    else let quotient, remainder =
+             divrem' dividend (double powerof2) (double divisor')
+         in  if (cmp remainder divisor') < 0
+             then quotient, remainder
+             else
+             (add' quotient powerof2 0),
+             (trimzeros(sub' remainder divisor' 0)) 
+
+
     (* imported from mathfns-trace *)
     let rec power' (base, expt, result) = match expt with
         | 0                   -> result
@@ -160,9 +173,17 @@ module Bigint = struct
         else
             Bigint(Neg, product)
 
-    let div = add
 
-    let rem = add
+    let div (Bigint (neg1, val1)) (Bigint (neg2, val2)) =
+        let quotient, _ = divrem' val1 [1] val2
+        in if neg1 = neg2 
+            then Bigint(Pos, quotient)
+        else
+            Bigint(Neg, quotient)
+
+    let rem (Bigint (neg1, val1)) (Bigint (neg2, val2)) =
+        let _, remainder = divrem' val1 [1] val2
+        in Bigint(Pos, remainder)
 
     let pow = add
 
