@@ -19,7 +19,6 @@ module Bigint = struct
     let strlen    = String.length
     let strsub    = String.sub
     let zero      = Bigint (Pos, [])
-    let double number = number + number
 
     let charlist_of_string str = 
         let last = strlen str - 1
@@ -96,6 +95,13 @@ module Bigint = struct
             then (res + 10) :: sub' cdr1 cdr2 1
             else (abs res) :: sub' cdr1 cdr2 0
 
+    let double number = 
+        let res = add' number number 0
+        in res
+
+
+
+(*
       let rec mul' list1 list2 carry = match (list1, list2, carry) with
         | list1, [], 0       -> list1
         | [], list2, 0       -> list2
@@ -104,23 +110,20 @@ module Bigint = struct
         | car1::cdr1, car2::cdr2, carry ->
           let res = car1 * car2 + carry
           in  res mod radix :: mul' cdr1 cdr2 (res / radix)
-
-(*
-    let rec mul' multiplier powerof2 multiplicand' =
-        match ( )
 *)
-(*
+
     let rec mul' multiplier powerof2 multiplicand' =
-    if powerof2 > multiplier
-    then multiplier, 0
+    if (cmp powerof2 multiplier) > 0
+    then multiplier, [0]
     else let remainder, product =
-             mul' multiplier (double powerof2) double multiplicand')
-         in  if remainder < powerof2
+             mul' multiplier (double powerof2) (double multiplicand')
+         in  if (cmp remainder powerof2) < 0
              then remainder, product
              (* else sub' remainder powerof2 0,
              add' product multiplicand 0*)
-             else remainder - powerof2, product + multiplicand'
-*)
+             else 
+             (sub' remainder powerof2 0),
+             (add' product multiplicand' 0)
 
     (* imported from mathfns-trace *)
     let rec power' (base, expt, result) = match expt with
@@ -150,18 +153,10 @@ module Bigint = struct
         else
             Bigint(neg2, sub' val2 val1 0)
 
-    let mul = add
-        (*let _, product = mul' (val1, [1], val2)
-        in Bigint (Pos, product)*)
-(*
-        if neg1 = neg2
-            then Bigint (Pos, mul' val1 [1] val2)
-            (* positive * negative = negative *)
-        else if neg1 = Neg (* - * - = + *) 
-            then Bigint (Pos, mul' val1 [1] val2)
-        else
-            Bigint (neg1, mul' val1 [1] val2)
-*)
+    let mul (Bigint (neg1, val1)) (Bigint (neg2, val2)) =
+        let _, product = mul' val1 [1] val2
+        in  Bigint(Pos, product)
+
     let div = add
 
     let rem = add
