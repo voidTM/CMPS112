@@ -122,7 +122,7 @@ module Bigint = struct
              (* else sub' remainder powerof2 0,
              add' product multiplicand 0*)
              else 
-             (sub' remainder powerof2 0),
+             (trimzeros(sub' remainder powerof2 0)),
              (add' product multiplicand' 0)
 
     (* imported from mathfns-trace *)
@@ -155,7 +155,10 @@ module Bigint = struct
 
     let mul (Bigint (neg1, val1)) (Bigint (neg2, val2)) =
         let _, product = mul' val1 [1] val2
-        in  Bigint(Pos, product)
+        in  if neg1 = neg2
+            then Bigint(Pos, product)
+        else
+            Bigint(Neg, product)
 
     let div = add
 
