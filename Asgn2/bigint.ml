@@ -154,7 +154,7 @@ module Bigint = struct
                                      (absdiv expt [2]) 
                                      result
             | expt                -> power' base
-                                     (trimzeros (sub' expt [1] 0))
+                                     (sub' expt [1] 0)
                                      (absmul base result)
 
 
