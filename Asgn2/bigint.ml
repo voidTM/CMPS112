@@ -173,11 +173,14 @@ module Bigint = struct
         (* the subtraction of two numbers when 
         signs are opposite is addition *)
         if neg1 != neg2
-            then Bigint(neg1, add' val1 val2 0)
+            (* first value will always take priority *)
+            then Bigint(neg1, add' val1 val2 0) 
         else if (cmp val1 val2) > 0
+            (* no sign switch if val1 > val2 *)
             then Bigint(neg1, sub' val1 val2 0)
         else
-            Bigint(neg2, sub' val2 val1 0)
+            (* flips sign *) 
+            Bigint(flip_sign neg1, sub' val2 val1 0) (* flips sign *)
 
     let mul (Bigint (neg1, val1)) (Bigint (neg2, val2)) =
         let _, product = mul' val1 [1] val2
