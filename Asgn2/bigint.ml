@@ -96,8 +96,8 @@ module Bigint = struct
         | car1::cdr1, car2::cdr2, carry ->
             let res = car1 - car2 - carry
             in if res < 0
-            then (res + 10) :: sub' cdr1 cdr2 1
-            else (abs res) :: sub' cdr1 cdr2 0
+            then (res + 10) :: (trimzeros (sub' cdr1 cdr2 1))
+            else (abs res) :: (trimzeros (sub' cdr1 cdr2 0))
 
     let double number = 
         let res = add' number number 0
@@ -127,7 +127,7 @@ module Bigint = struct
              then quotient, remainder
              else
              (add' quotient powerof2 0),
-             (trimzeros(sub' remainder divisor' 0)) 
+             (trimzeros (sub' remainder divisor' 0)) 
 
     let even number = 
         let _, remainder = divrem' number [1] [2]
@@ -154,7 +154,7 @@ module Bigint = struct
                                      (absdiv expt [2]) 
                                      result
             | expt                -> power' base
-                                     (sub' expt [1] 0)
+                                     (trimzeros (sub' expt [1] 0))
                                      (absmul base result)
 
 
