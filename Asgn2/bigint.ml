@@ -8,7 +8,6 @@ module Bigint = struct
     type bigint   = Bigint of sign * int list
     let  radix    = 10
     let  radixlen =  1
-    let even number = number mod 2 = 0
 
 
     let car       = List.hd
@@ -19,6 +18,11 @@ module Bigint = struct
     let strlen    = String.length
     let strsub    = String.sub
     let zero      = Bigint (Pos, [])
+
+    let flip_sign x = match x with 
+      | Pos -> Neg
+      | Neg -> Pos
+
 
     let charlist_of_string str = 
         let last = strlen str - 1
@@ -99,19 +103,7 @@ module Bigint = struct
         let res = add' number number 0
         in res
 
-
-
-(*
-      let rec mul' list1 list2 carry = match (list1, list2, carry) with
-        | list1, [], 0       -> list1
-        | [], list2, 0       -> list2
-        | list1, [], carry   -> add' list1 [carry] 0
-        | [], list2, carry   -> add' [carry] list2 0
-        | car1::cdr1, car2::cdr2, carry ->
-          let res = car1 * car2 + carry
-          in  res mod radix :: mul' cdr1 cdr2 (res / radix)
-*)
-
+        (* recursivley multiplies using egyptian multiplication *)
     let rec mul' multiplier powerof2 multiplicand' =
     if (cmp powerof2 multiplier) > 0
     then multiplier, [0]
@@ -125,7 +117,7 @@ module Bigint = struct
              (trimzeros(sub' remainder powerof2 0)),
              (add' product multiplicand' 0)
 
-
+             (* recursivley multiplies using egyptiab division *)
     let rec divrem' dividend powerof2 divisor' =
     if (cmp divisor' dividend) > 0
     then [0], dividend
@@ -137,12 +129,33 @@ module Bigint = struct
              (add' quotient powerof2 0),
              (trimzeros(sub' remainder divisor' 0)) 
 
+    let even number = 
+        let _, remainder = divrem' number [1] [2]
+        in if remainder = [0]
+            then true
+        else
+            false
+
+    (* divide and multiply as absolute values *)
+    let absdiv val1 val2 =
+        let quotient, _ = divrem' val1 [1] val2 
+        in quotient
+
+    let absmul val1 val2 = 
+        let _, product = mul' val1 [1] val2
+        in product
 
     (* imported from mathfns-trace *)
-    let rec power' (base, expt, result) = match expt with
-        | 0                   -> result
-        | expt when even expt -> power' (base *. base, expt / 2, result)
-        | expt                -> power' (base, expt - 1, base *. result)
+    let rec power' base expt result = 
+        match expt with
+            | [0]                 -> result
+            | expt when even expt -> power' 
+                                     (absmul base base)
+                                     (absdiv expt [2]) 
+                                     result
+            | expt                -> power' base
+                                     (sub' expt [1] 0)
+                                     (absmul base result)
 
 
     let add (Bigint (neg1, value1)) (Bigint (neg2, value2)) =
@@ -185,7 +198,10 @@ module Bigint = struct
         let _, remainder = divrem' val1 [1] val2
         in Bigint(Pos, remainder)
 
-    let pow = add
+    let pow (Bigint (neg1, base)) (Bigint (neg2, expt)) = 
+        let res = power' base expt [1]
+        in Bigint(Pos, res)
+
 
 end
 
