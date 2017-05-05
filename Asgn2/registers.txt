@@ -1,0 +1,16 @@
+add in maindc.ml:
+
+-let registers = Array.make 256 (false, zero)
+
+-modify executereg:
+let executereg (thestack: stack_t) (oper: char) (reg: int) =
+    try match oper with		
+		| 'l' -> (
+			let entry = aget symbol_table reg
+			in match entry with 
+				| false, _ -> printf "dc: register '%c' is empty\n%!" (chr reg)
+				| true, reg -> push reg thestack
+			)
+		| 's' -> aset symbol_table reg (true, (pop thestack)) 
+        | _   -> printf "0%o 0%o is unimplemented\n%!" (ord oper) reg
+    with Stack.Empty -> print_stackempty()
