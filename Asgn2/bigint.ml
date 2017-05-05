@@ -1,5 +1,8 @@
 (* $Id: bigint.ml,v 1.5 2014-11-11 15:06:24-08 - - $ *)
-
+(* AUTHORS: 
+   Sam Song(sasong@ucsc.edu)
+   Edward Nguyen(ejnguyen@ucsc.edu)
+*)
 open Printf
 
 module Bigint = struct
@@ -78,7 +81,7 @@ module Bigint = struct
         let recval = cmp cdr1 cdr2
             in recval * 10 + car1 - car2
 
-
+    (* recuresive adds digit by digit*)
     let rec add' list1 list2 carry = match (list1, list2, carry) with
         | list1, [], 0       -> list1
         | [], list2, 0       -> list2
@@ -89,6 +92,7 @@ module Bigint = struct
           in  sum mod radix :: add' cdr1 cdr2 (sum / radix)
 
     (* Note will not work properly unles val1 > val2 *)
+    (* recursive subtraction digit by digit *)
     let rec sub' list1 list2 carry = match (list1, list2, carry) with
         | list1, [], 0       -> list1
         | [], list2, borrow  -> list2
@@ -96,6 +100,7 @@ module Bigint = struct
         | car1::cdr1, car2::cdr2, carry ->
             let res = car1 - car2 - carry
             in if res < 0
+            (* needs to borrow 10 for the subtraction *)
             then (res + 10) :: (trimzeros (sub' cdr1 cdr2 1))
             else (abs res) :: (trimzeros (sub' cdr1 cdr2 0))
 
@@ -103,7 +108,7 @@ module Bigint = struct
         let res = add' number number 0
         in res
 
-        (* recursivley multiplies using egyptian multiplication *)
+    (* recursivley multiplies using egyptian multiplication *)
     let rec mul' multiplier powerof2 multiplicand' =
     if (cmp powerof2 multiplier) > 0
     then multiplier, [0]
@@ -111,13 +116,11 @@ module Bigint = struct
              mul' multiplier (double powerof2) (double multiplicand')
          in  if (cmp remainder powerof2) < 0
              then remainder, product
-             (* else sub' remainder powerof2 0,
-             add' product multiplicand 0*)
              else 
              (trimzeros(sub' remainder powerof2 0)),
              (add' product multiplicand' 0)
 
-             (* recursivley multiplies using egyptiab division *)
+    (* recursivley divides using egyptiab division *)
     let rec divrem' dividend powerof2 divisor' =
     if (cmp divisor' dividend) > 0
     then [0], dividend
@@ -129,6 +132,8 @@ module Bigint = struct
              (add' quotient powerof2 0),
              (trimzeros (sub' remainder divisor' 0)) 
 
+    (* checks to see it number is even or not 
+       by moding the number by 2*)
     let even number = 
         let _, remainder = divrem' number [1] [2]
         in if remainder = [0]
@@ -136,6 +141,7 @@ module Bigint = struct
         else
             false
 
+    (* absolute value operations mostly for power *)
     (* divide and multiply as absolute values *)
     let absdiv val1 val2 =
         let quotient, _ = divrem' val1 [1] val2 
@@ -145,10 +151,13 @@ module Bigint = struct
         let _, product = mul' val1 [1] val2
         in product
 
+
+
     (* imported from mathfns-trace *)
     let rec power' base expt result = 
         match expt with
             | [0]                 -> result
+
             | expt when even expt -> power' 
                                      (absmul base base)
                                      (absdiv expt [2]) 
@@ -163,11 +172,11 @@ module Bigint = struct
             then Bigint (neg1, add' value1 value2 0)
         
         else if (cmp value1 value2) > 0 
-            (* value 1 is larger *)
+            (* value 1 is larger use sign of value1 *)
             then Bigint (neg1, sub' value1 value2 0)
-        else (* value 2 is larger*)
+        else 
+            (* value 2 is larger as such take the sign of value2 *)
             Bigint (neg2, sub' value2 value1 0)
-        (* implement code over here to account for addiction of values with different signs *)
 
     let sub (Bigint (neg1, val1)) (Bigint (neg2, val2)) =
         (* the subtraction of two numbers when 
@@ -181,6 +190,8 @@ module Bigint = struct
         else
             (* flips sign *) 
             Bigint(flip_sign neg1, sub' val2 val1 0) (* flips sign *)
+
+
 
     let mul (Bigint (neg1, val1)) (Bigint (neg2, val2)) =
         let _, product = mul' val1 [1] val2

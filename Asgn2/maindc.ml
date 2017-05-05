@@ -1,4 +1,8 @@
 (* $Id: maindc.ml,v 1.5 2017-04-07 13:24:41-07 - - $ *)
+(* AUTHORS: 
+   Sam Song(sasong@ucsc.edu)
+   Edward Nguyen(ejnguyen@ucsc.edu)
+*)
 
 include Scanner
 include Bigint
@@ -6,10 +10,12 @@ include Bigint
 open Bigint
 open Printf
 open Scanner
+open Hashtbl
 
 type stack_t = Bigint.bigint Stack.t
 let push = Stack.push
 let pop = Stack.pop
+let register = Hashtbl.create 128
 
 let ord thechar = int_of_char thechar
 type binop_t = bigint -> bigint -> bigint
@@ -18,10 +24,14 @@ let print_number number = printf "%s\n%!" (string_of_bigint number)
 
 let print_stackempty () = printf "stack empty\n%!"
 
+
+(* registar operations *)
 let executereg (thestack: stack_t) (oper: char) (reg: int) =
     try match oper with
-        | 'l' -> printf "operator l reg 0%o is unimplemented\n%!" reg
-        | 's' -> printf "operator s reg 0%o is unimplemented\n%!" reg
+        (* copy from register to stack *)
+        | 'l' -> push(Hashtbl.find register reg) thestack 
+        (* pop from stack and move to register *)
+        | 's' -> Hashtbl.add register reg (pop thestack)
         | _   -> printf "0%o 0%o is unimplemented\n%!" (ord oper) reg
     with Stack.Empty -> print_stackempty()
 
