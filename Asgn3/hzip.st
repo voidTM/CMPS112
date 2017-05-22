@@ -13,10 +13,10 @@ outfile := stdout.
 "------------------------------------------------------"
 "Globals"
 flags := Dictionary new.
-   (flags at: 'd' put: FALSE).
-   (flags at: 't' put: FALSE).
-   (flags at: 'c' put: FALSE).
-   (flags at: 'u' put: FALSE).
+   (flags at: '$d' put: false).
+   (flags at: '$t' put: false).
+   (flags at: '$c' put: false).
+   (flags at: '$u' put: false).
 
 
 
@@ -207,7 +207,7 @@ FileStream extend [
          ordChar := self next asInteger.
          freqtable incr: ordChar.
       ].
-      freqtable incr: 256
+      freqtable incr: 256.
       ^ freqtable
    ]
 ]
@@ -216,10 +216,10 @@ FileStream extend [
 |readfile writefile|
 
 readfile := FileStream open: infile
-                        mode: FileStream read
+                        mode: FileStream read.
 
 writefile := FileStream open: outfile
-                        mode: FileStream read
+                        mode: FileStream write.
 
 |freqtable|
 
@@ -268,7 +268,10 @@ do: [:argi |
 
 
 " program expects hzip.st options file1 file2"
-Smalltalk arguments size < 2
+argSize := Smalltalk arguments size.
+flagF := a.
+" program expects hzip.st options file1 file2"
+argSize < 2
   ifTrue: [
     stderr << 'Arugment amount mismatch' << nl.
     ObjectMemory quit.
@@ -279,13 +282,18 @@ Smalltalk arguments size < 2
    Smalltalk arguments: '-t -c -u -d'
    do: [:opt :arg |
       " Do something here to set the options flags "
-      flags at: opt ifPresent: [flags at: opt put: TRUE].
+      flags at: opt ifPresent: [flags at: opt put: true].
       'arguments:do: ' display.
-      opt display.
+      opt displayNl.
+      stdout << opt << nl.
       ' ' display.
       arg displayNl.
-      flags at: opt put: TRUE
+      flags at: opt put: true.
       "Check set to arguments"
+      (opt == $d) ifTrue: [dflag := true.].
+      (opt == $c) ifTrue: [cflag := true.].
+      (opt == $t) ifTrue: [tflag := true.].
+      (opt == $u) ifTrue: [uflag := true.].
    ]
    ifError: [
       stderr << 'Error: invalid option' << nl.

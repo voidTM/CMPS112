@@ -4,6 +4,14 @@
 "Parse command line arguments"
 ""
 
+
+flags := Dictionary new.
+   (flags at: '$d' put: false).
+   (flags at: '$t' put: false).
+   (flags at: '$c' put: false).
+   (flags at: '$u' put: false).
+
+
 execname := '$RCSfile: cmdline.st,v $' =~ '.*: (.*),v.*' at: 1.
 nl := Character nl.
 
@@ -33,32 +41,37 @@ do: [:argi |
    '"' displayNl.
 ].
 
-"parser maybe functional?"
-Smalltalk arguments: '-t -c -u -d'
-do: [:opt :arg |
-   'arguments:do: ' display.
-   opt display.
-   ' ' display.
-   arg displayNl.
-]
-ifError: [
-   'Error: invalid option' displayNl.
-   '--foo'
-]
-
+argSize := Smalltalk arguments size.
+flagF := a.
 " program expects hzip.st options file1 file2"
-Smalltalk arguments size < 2
+argSize < 2
   ifTrue: [
     stderr << 'Arugment amount mismatch' << nl.
-    stderr << 'Expect hzip.st [flags]
-               [input file] [output file]' << nl.
     ObjectMemory quit.
   ] ifFalse: [
-    Smalltalk arguments: '-t -c -u -d'
-    do: [:opt :arg |
-      'rguments:do: ' display.
-      opt display.
+   " parse each argument as a tuple 
+   of option and arguments"
+
+   Smalltalk arguments: '-t -c -u -d'
+   do: [:opt :arg |
+      " Do something here to set the options flags "
+      flags at: opt ifPresent: [flags at: opt put: true].
+      'arguments:do: ' display.
+      opt displayNl.
+      stdout << opt << nl.
       ' ' display.
       arg displayNl.
-    ]
-  ]
+      flags at: opt put: true.
+      "Check set to arguments"
+      (opt == $d) ifTrue: [dFlag := true.].
+      (opt == $c) ifTrue: [cFlag := true.].
+      (opt == $t) ifTrue: [tFlag := true.].
+      (opt == $u) ifTrue: [uFlag := true.].
+   ]
+   ifError: [
+      stderr << 'Error: invalid option' << nl.
+      ObjectMemory quit.
+   ]  
+].
+
+flags display.
