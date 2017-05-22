@@ -46,8 +46,19 @@ ifError: [
    '--foo'
 ]
 
-'$RCSfile: cmdline.st,v $' display.
-'finished.' displayNl.
-
-"TEST: cmdline.st foo bar baz"
-
+" program expects hzip.st options file1 file2"
+Smalltalk arguments size < 2
+  ifTrue: [
+    stderr << 'Arugment amount mismatch' << nl.
+    stderr << 'Expect hzip.st [flags]
+               [input file] [output file]' << nl.
+    ObjectMemory quit.
+  ] ifFalse: [
+    Smalltalk arguments: '-t -c -u -d'
+    do: [:opt :arg |
+      'rguments:do: ' display.
+      opt display.
+      ' ' display.
+      arg displayNl.
+    ]
+  ]

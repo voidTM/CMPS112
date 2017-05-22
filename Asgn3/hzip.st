@@ -165,18 +165,26 @@ do: [:argi |
    '"' displayNl.
 ].
 
-" parse"
-Smalltalk arguments: '-t -c -u -d'
-do: [:opt :arg |
-   'arguments:do: ' display.
-   opt display.
-   ' ' display.
-   arg displayNl.
-]
-ifError: [
-   'Error: invalid option' displayNl.
-   '--foo'
-]
 
-'$RCSfile: cmdline.st,v $' display.
-'finished.' displayNl.
+
+" program expects hzip.st options file1 file2"
+Smalltalk arguments size < 2
+  ifTrue: [
+    stderr << 'Arugment amount mismatch' << nl.
+    ObjectMemory quit.
+  ] ifFalse: [
+   " parse each argument as a tuple 
+   of option and arguments"
+
+   Smalltalk arguments: '-t -c -u -d'
+   do: [:opt :arg |
+      'arguments:do: ' display.
+      opt display.
+      ' ' display.
+      arg displayNl.
+   ]
+   ifError: [
+      'Error: invalid option' displayNl.
+      '--foo'
+   ]  
+].
