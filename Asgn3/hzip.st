@@ -3,6 +3,17 @@
 execname := '$RCSfile: cmdline.st,v $' =~ '.*: (.*),v.*' at: 1.
 nl := Character nl.
 
+
+"------------------------------------------------------"
+"Globals"
+flags := Dictionary new.
+   (flags at: 'd' put: FALSE).
+   (flags at: 't' put: FALSE).
+   (flags at: 'c' put: FALSE).
+   (flags at: 'u' put: FALSE).
+
+
+
 "------------------------------------------------------"
 "arrays?"
 
@@ -134,10 +145,6 @@ Leaf subclass: Tree [
 "------------------------------------------------------"
 " input and output here "
 " mainish "
-inFile := nil.
-outFile := nil.
-flag := nil.
-dFlag := nil.
 
 stdout << 'execname: ' << execname << nl.
 stdout << 'version: ' << Smalltalk version << nl.
@@ -178,13 +185,19 @@ Smalltalk arguments size < 2
 
    Smalltalk arguments: '-t -c -u -d'
    do: [:opt :arg |
+      " Do something here to set the options flags "
+      flags at: opt ifPresent: [flags at: opt put: TRUE].
       'arguments:do: ' display.
       opt display.
       ' ' display.
       arg displayNl.
+      flags at: opt put: TRUE
+      "Check set to arguments"
    ]
    ifError: [
-      'Error: invalid option' displayNl.
-      '--foo'
+      stderr << 'Error: invalid option' << nl.
+      ObjectMemory quit.
    ]  
 ].
+
+flags display.
