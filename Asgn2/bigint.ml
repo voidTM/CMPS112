@@ -21,7 +21,7 @@ module Bigint = struct
     let strlen    = String.length
     let strsub    = String.sub
     let zero      = Bigint (Pos, [])
-
+    (* flips the sign of a number *)
     let flip_sign x = match x with 
       | Pos -> Neg
       | Neg -> Pos
@@ -166,7 +166,7 @@ module Bigint = struct
                                      (sub' expt [1] 0)
                                      (absmul base result)
 
-
+    
     let add (Bigint (neg1, value1)) (Bigint (neg2, value2)) =
         if neg1 = neg2
             then Bigint (neg1, add' value1 value2 0)

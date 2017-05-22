@@ -45,7 +45,6 @@ let executebinop (thestack: stack_t) (oper: binop_t) =
 
 let execute (thestack: stack_t) (oper: char) =
     try match oper with
-        (* # # +  adds 2 values or 1 from the stack then pushes result to stack*) 
         | '+'  -> executebinop thestack Bigint.add
         | '-'  -> executebinop thestack Bigint.sub
         | '*'  -> executebinop thestack Bigint.mul

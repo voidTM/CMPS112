@@ -1,0 +1,26 @@
+head	1.1;
+access;
+symbols;
+locks;
+comment	@# @;
+
+
+1.1
+date	2016.10.13.19.52.01;	author -;	state -;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@-
+@
+text
+@This is a test file.
+Some random characters for binary and hexadecimal dumps.
+$Id: testfile.in,v 1.1 2015-10-22 16:54:21-07 - - $
+@

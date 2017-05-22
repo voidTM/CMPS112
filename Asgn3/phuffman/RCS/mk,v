@@ -1,0 +1,322 @@
+head	1.13;
+access;
+symbols;
+locks;
+comment	@# @;
+
+
+1.13
+date	2016.11.08.20.25.22;	author -;	state -;
+branches;
+next	1.12;
+
+1.12
+date	2016.11.08.20.24.14;	author -;	state -;
+branches;
+next	1.11;
+
+1.11
+date	2016.11.08.20.23.23;	author -;	state -;
+branches;
+next	1.10;
+
+1.10
+date	2016.11.08.20.21.32;	author -;	state -;
+branches;
+next	1.9;
+
+1.9
+date	2016.11.08.20.20.01;	author -;	state -;
+branches;
+next	1.8;
+
+1.8
+date	2016.11.08.20.18.56;	author -;	state -;
+branches;
+next	1.7;
+
+1.7
+date	2015.10.24.01.17.18;	author -;	state -;
+branches;
+next	1.6;
+
+1.6
+date	2015.10.24.01.16.37;	author -;	state -;
+branches;
+next	1.5;
+
+1.5
+date	2015.10.24.01.15.25;	author -;	state -;
+branches;
+next	1.4;
+
+1.4
+date	2015.10.24.01.14.09;	author -;	state -;
+branches;
+next	1.3;
+
+1.3
+date	2014.10.25.00.31.19;	author -;	state -;
+branches;
+next	1.2;
+
+1.2
+date	2014.10.25.00.30.27;	author -;	state -;
+branches;
+next	1.1;
+
+1.1
+date	2014.10.25.00.22.19;	author -;	state -;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.13
+log
+@-
+@
+text
+@#!/bin/sh
+# $Id: mk,v 1.12 2016-11-08 12:24:14-08 - - $
+
+cat >test1.in <<__END__
+eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+tttttttttttttttttttttttttttttttttttttttt
+aaaaaaaaaaaaaaaaaaaa
+oooooooooooooooooooo
+__END__
+
+cat >test2.in <<__END__
+eeeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeeee eeeeeeeeee
+eeeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeeee eeeeeeeeee
+tttttttttttttttttttt tttttttttttttttttttt
+aaaaaaaaaaaaaaaaaaaa
+oooooooooooooooooooo
+iiiiiiiiii
+nnnnn
+sssss
+h
+r
+__END__
+
+cat >test3.in <<__END__
+aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
+bbbbbbbbbb bbbbbbbbbb bbbbbbbbbb bbbbbbbbbb
+cccccccccc cccccccccc cccccccccc cccccccccc
+dddddddddd dddddddddd dddddddddd dddddddddd
+eeeeeeeeee eeeeeeeeee eeeeeeeeee eeeeeeeeee
+ffffffffff ffffffffff ffffffffff ffffffffff
+gggggggggg gggggggggg gggggggggg gggggggggg
+hhhhhhhhhh hhhhhhhhhh hhhhhhhhhh hhhhhhhhhh
+iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii
+jjjjjjjjjj jjjjjjjjjj jjjjjjjjjj jjjjjjjjjj
+__END__
+
+cid $0 phuffman.perl
+for infile in test?.in
+do
+   outfile=$(echo $infile | sed s/in/out/)
+   lisfile=$(echo $infile | sed s/in/lis/)
+   phuffman.perl <$infile >$outfile 2>&1
+   more $infile $outfile >$lisfile </dev/null
+done
+mkpspdf Listing.ps test?.lis $0 phuffman.perl
+@
+
+
+1.12
+log
+@-
+@
+text
+@d2 1
+a2 1
+# $Id: mk,v 1.11 2016-11-08 12:23:23-08 - - $
+d31 5
+@
+
+
+1.11
+log
+@-
+@
+text
+@d2 1
+a2 1
+# $Id: mk,v 1.10 2016-11-08 12:21:32-08 - - $
+d26 5
+a30 4
+aaaaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaaaa
+bbbbbbbbbbbbbbbbbbbb bbbbbbbbbbbbbbbbbbbb
+cccccccccccccccccccc cccccccccccccccccccc
+dddddddddddddddddddd dddddddddddddddddddd
+@
+
+
+1.10
+log
+@-
+@
+text
+@d2 1
+a2 1
+# $Id: mk,v 1.8 2016-11-08 12:18:56-08 - - $
+d33 8
+a40 6
+phuffman.perl <test1.in >test1.out 2>&1
+phuffman.perl <test2.in >test2.out 2>&1
+phuffman.perl <test3.in >test3.out 2>&1
+more test1.in test1.out test2.in test2.out test3.in test3.out \
+     >tests.lis </dev/null
+mkpspdf Listing.ps tests.lis $0 phuffman.perl
+@
+
+
+1.9
+log
+@-
+@
+text
+@d33 5
+a37 5
+for file in test?.in
+do
+   phuffman.perl <$file >$(echo $file | sed s/in/out/)  2>&1
+done
+more test1.in test1.out test2.in test2.out >tests.lis </dev/null
+@
+
+
+1.8
+log
+@-
+@
+text
+@d2 1
+a2 1
+# $Id: mk,v 1.7 2015-10-23 18:17:18-07 - - $
+d33 4
+a36 2
+phuffman.perl <test1.in >test1.out 2>&1
+phuffman.perl <test2.in >test2.out 2>&1
+@
+
+
+1.7
+log
+@-
+@
+text
+@d2 1
+a2 1
+# $Id: mk,v 1.6 2015-10-23 18:16:37-07 - - $
+d23 7
+@
+
+
+1.6
+log
+@-
+@
+text
+@d2 1
+a2 11
+# $Id: mk,v 1.5 2015-10-23 18:15:25-07 - - $
+
+show() {
+   for file in $*
+   do
+      echo ::::::::::::::::::::::::::::::::
+      echo $file
+      echo ::::::::::::::::::::::::::::::::
+      cat -v $file
+   done
+}
+d28 1
+a28 1
+more test1.in test1.out test2.in test2.out >tests.lis
+@
+
+
+1.5
+log
+@-
+@
+text
+@d2 1
+a2 1
+# $Id: mk,v 1.4 2015-10-23 18:14:09-07 - - $
+a21 2
+phuffman.perl <test1.in >test1.out 2>&1
+
+d36 1
+d38 1
+a38 1
+show test1.in test1.out test2.in test2.out >tests.lis
+@
+
+
+1.4
+log
+@-
+@
+text
+@d2 1
+a2 1
+# $Id: mk,v 1.3 2014-10-24 17:31:19-07 - - $
+d40 1
+a40 1
+mkpspdf Listing.ps tests.lis phuffman.perl $0
+@
+
+
+1.3
+log
+@-
+@
+text
+@d2 1
+a2 1
+# $Id: mk,v 1.2 2014-10-24 17:30:27-07 - - $
+d40 1
+a40 1
+mkpspdf Listing.ps phuffman.perl tests.lis $0
+@
+
+
+1.2
+log
+@-
+@
+text
+@d2 1
+a2 1
+# $Id: mk,v 1.1 2014-10-24 17:22:19-07 - - $
+d7 1
+a7 1
+      echo ============================================================
+d9 1
+a9 1
+      echo ============================================================
+@
+
+
+1.1
+log
+@-
+@
+text
+@d2 39
+a40 6
+# $Id$
+for test in 1 2
+do
+   phuffman.perl test$test.in >test$test.out 2>&1
+done
+more test?.{in,out} >tests.lis 2>&1 </dev/null
+@

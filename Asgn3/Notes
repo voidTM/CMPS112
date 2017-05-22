@@ -1,0 +1,31 @@
+
+end statements with periods.
+
+symbols
+:= assignment
+nl newline
+"" is a comment?
+
+
+<< is used for input?
+a bit similar to c++?
+want to add to class
+use system b
+
+smalltalk is an interpreted language
+
+the object that recieves the command comes first apply the right side to the left side
+	messages are executed from left to right
+		parenthesized first
+		unary->binary->keyword
+
+run using gst -f hzip.st
+
+3 kinds of messages
+unary : single worded message
+binary: message that consist of special characters
+keyword: mssages with any number of arguments
+
+	every message gives an object
+		thus can be combined
+Smalltalk arguments -> returns list of arguments passed from the command line
