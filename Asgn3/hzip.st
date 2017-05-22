@@ -2,6 +2,12 @@
 " REGEx on first part?"
 execname := '$RCSfile: cmdline.st,v $' =~ '.*: (.*),v.*' at: 1.
 nl := Character nl.
+dflag := false.
+cflag := false.
+tflag := false.
+uflag := false.
+infile := ''.
+outfile := stdout.
 
 "------------------------------------------------------"
 "arrays?"
@@ -124,6 +130,93 @@ Leaf subclass: Tree [
 
 "------------------------------------------------------"
 " Compression "
+" Count frequency of input char based on charfreq.st"
+Object subclass: ZeroArray [
+   |theArray|
+
+   ZeroArray class >> new [
+      self shouldNotImplement.
+   ]
+
+   ZeroArray class >> new: size [
+      |result|
+      result := super new.
+      result init: size.
+      ^ result
+   ]
+
+   init: size [
+      theArray := Array new: size.
+   ]
+
+   size [
+      ^ theArray size.
+   ]
+
+   at: index [
+      ^ theArray at: index + 1.
+   ]
+
+   at: index put: value [
+      ^ theArray at: index + 1 put: value.
+   ]
+
+   incr: index [
+      (self at: index) isNil
+         ifTrue: [ self at: index put: 0].
+      self at: index put: (self at: index) + 1.
+   ]
+
+   keysAndValuesDo: aBlock [
+      (0 to: (self size) - 1) do: [:index |
+         aBlock value: index value: (self at: index).
+      ]
+   ]
+
+]
+
+"taken from catfile.st"
+
+FileStream extend [
+   nl := Character nl.
+   catFile [
+      |count|
+      count := 0.
+      [self atEnd not] whileTrue: [
+         count := count + 1.
+         count asString size to: 5 do: [:skip| stdout << ' '].
+         stdout << count << ': ' << self nextLine << nl.
+      ]
+   ]
+   parseFile [
+      |freqtable|
+      freqtable := ZeroArray new: 257.
+      [self atEnd not] whileTrue: [
+         |ordChar|
+         ordChar := self next asInteger.
+         freqtable incr: ordChar.
+      ].
+      freqtable incr: 256
+      ^ freqtable
+   ]
+]
+
+
+|readfile writefile|
+
+readfile := FileStream open: infile
+                        mode: FileStream read
+
+writefile := FileStream open: outfile
+                        mode: FileStream read
+
+|freqtable|
+
+uflag ifFalse: [freqtable := readfile parseFile.].
+
+dflag ifTrue:[].
+
+|prque|
 
 "------------------------------------------------------"
 " Uncompressing "
