@@ -5,11 +5,6 @@
 ""
 
 
-flags := Dictionary new.
-   (flags at: '$d' put: false).
-   (flags at: '$t' put: false).
-   (flags at: '$c' put: false).
-   (flags at: '$u' put: false).
 
 
 execname := '$RCSfile: cmdline.st,v $' =~ '.*: (.*),v.*' at: 1.

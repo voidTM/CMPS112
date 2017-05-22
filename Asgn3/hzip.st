@@ -301,4 +301,5 @@ argSize < 2
    ]  
 ].
 
-flags display.
+
+flags at: $c display.
