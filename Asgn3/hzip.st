@@ -309,6 +309,7 @@ infile ~= nil
       |rfile|
       rfile := FileStream open: infile
           mode: FileStream read.
+      rfile catFile.
       rfile close.
     ] on: SystemExceptions.FileError do: [:signal |
       |errno|
@@ -323,7 +324,7 @@ infile ~= nil
 
 
 
-"UNIT TESTS HERE"
+"UNIT TESTS HERE
 flags displayNl.
 
 dflag displayNl.
@@ -332,3 +333,4 @@ tflag displayNl.
 uflag displayNl.
 infile displayNl.
 outfile displayNl.
+"
