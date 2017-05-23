@@ -95,6 +95,17 @@ Object subclass: Leaf [
       visitor value: char value: string.
    ]
 
+   binTreeDump: aBitstream [
+      aBitstream putBit: 0.
+      (1 to: 8) do: [:index|
+      aBitstream putBitL ((self char asInteger) bitAt: index)].
+      char asInteger = 0 ifTrue:[
+        aBitstream putBit: 0.
+      ].
+      char asInteger = 256 ifTrue:[
+        aBistream putBit: 1.
+      ].
+   ]
 ]
 
 
@@ -126,6 +137,11 @@ Leaf subclass: Tree [
       right inorder: visitor prefix: string, '1'.
    ]
 
+   binTreeDump: aBitstream [
+      left binTreeDump: aBitstream.
+      right binTreeDump: aBitstream.
+      aBitstream putBit: 1.
+   ]
 ]
 
 "------------------------------------------------------"
@@ -196,27 +212,81 @@ FileStream extend [
          ordChar := self next asInteger.
          freqtable incr: ordChar.
       ].
-      freqtable incr: 256
+      freqtable incr: 256.
       ^ freqtable
    ]
 ]
 
-
 |readfile writefile|
 
 readfile := FileStream open: infile
-                        mode: FileStream read
+                        mode: FileStream read.
 
 writefile := FileStream open: outfile
-                        mode: FileStream read
+                        mode: FileStream write.
+
+"Create frequency table"
 
 |freqtable|
 
 uflag ifFalse: [freqtable := readfile parseFile.].
 
-dflag ifTrue:[].
+dflag ifTrue:[
+    (0 to: freqtable size - 1)
+    do: [:index|
+        "index: " display.
+        index display.
+        ' ' display.
+        "item: " display.
+        item := freqtable at: index.
+        item display.
+        n1 display.
+    ].
+].
+
+"Iterate over frequency table. insert leaf into priority queue"
 
 |prque|
+
+prque := SortedCollection new.
+
+uflag if False: [
+    (0 to: freqtable size - 1)
+    do: [:index | 
+        |cleaf ccount cchar|
+        ccount := freqtable at: index.
+        ccount isInteger ifTrue:[
+            cchar := index asCharacter.
+            cleaf := Leaf new: cchar count: ccount.
+            prque add: cleaf. 
+        ].
+    ].
+].
+
+dflag ifTrue: [prque inspect.].
+
+"Create new tree by removing smallest two elements"
+
+uflag ifFalse:[
+    [prque size > 1] whileTrue:[
+        |last seclast tree treechar treecount|
+        last := prque removeFirst.
+        seclast := prque removeFirst.
+        treechar := last char.
+        treecount := last count + seclast count.
+        tree := Tree new: treechar
+                    count: treecount
+                    left: last
+                    right: seclast
+        prque add: tree
+    ].
+].
+
+dflag ifTrue: [prque inspect.].
+
+"Create encoding table"
+
+|tree encodetable|
 
 "------------------------------------------------------"
 " Uncompressing "
