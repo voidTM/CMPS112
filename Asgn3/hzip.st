@@ -322,9 +322,28 @@ infile ~= nil
     ]
 ]. 
 
+" operate on infile"
+infile ~= nil
+  ifTrue:[
+    [   
+      |rfile|
+      rfile := FileStream open: infile
+          mode: FileStream read.
+      rfile catFile.
+      rfile close.
+    ] on: SystemExceptions.FileError do: [:signal |
+      |errno|
+      errno := File errno.
+      stdout flush.
+      stderr << execname << ': ' << infile << ': '
+          << signal messageText << nl.
+      stderr flush.
+      ObjectMemory quit.
+    ]
+]. 
 
 
-"UNIT TESTS HERE
+"UNIT TESTS HERE"
 flags displayNl.
 
 dflag displayNl.
@@ -333,4 +352,3 @@ tflag displayNl.
 uflag displayNl.
 infile displayNl.
 outfile displayNl.
-"
