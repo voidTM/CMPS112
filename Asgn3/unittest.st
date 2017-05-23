@@ -62,6 +62,7 @@ Object subclass: ZeroArray [
 
 ]
 
+encodetable := ZeroArray new: 257.
 
 
 "TREEE"
@@ -270,8 +271,15 @@ infile ~= nil
         prque add: tree.
       ].
 
-      huffman_tree := prque removeFirst.
 
+
+      huffman_tree := prque removeFirst.
+      huffman_tree inorder: [:char :string |
+        |index count|
+        index := char asInteger.
+        encodetable at: index put: string.
+      ] prefix: ''.
+      
 
 
       rfile close.
@@ -307,3 +315,13 @@ prque inspect.
 huffman_tree inorder: [:char :string |
    stdout << '[' << char << ']=' << string << nl.
 ] prefix: ''.
+
+
+(0 to: encodetable size - 1)
+do: [:index |
+    (encodetable at: index) ~= nil
+      ifTrue: [
+        stdout << 'Index ' << index << ' '.
+        (encodetable at: index) displayNl.
+      ]
+].
