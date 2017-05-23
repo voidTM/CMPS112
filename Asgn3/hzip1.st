@@ -13,11 +13,10 @@ uflag := false.
 infile := nil.
 outfile := stdout.
 
-opFlag := nil.
 huffman_tree := nil.
 freqtable := nil.
 encodetable := nil.
-prque := nil.
+prque := SortedCollection new.
 
 
 "------------------------------------------------------"
@@ -256,58 +255,7 @@ FileStream extend [
 ]
 
 
-"------------------------------------------------------"
 
-" move creation to being a global? "
-|freqtable|
-
-dflag ifTrue:[
-    (0 to: freqtable size - 1)
-    do: [:index|
-        "index: " display.
-        index display.
-        ' ' display.
-        "item: " display.
-        item := freqtable at: index.
-        item display.
-        n1 display.
-    ].
-].
-
-"------------------------------------------------------"
-
-"Iterate over frequency table. insert leaf into priority queue"
-
-
-prque := SortedCollection new.
-
-"------------------------------------------------------"
-
-dflag ifTrue: [prque inspect.].
-
-"Create new tree by removing smallest two elements"
-
-uflag ifFalse:[
-    [prque size > 1] whileTrue:[
-        |last seclast tree treechar treecount|
-        last := prque removeFirst.
-        seclast := prque removeFirst.
-        treechar := last char.
-        treecount := last count + seclast count.
-        tree := Tree new: treechar
-                    count: treecount
-                    left: last
-                    right: seclast.
-        prque add: tree.
-    ].
-].
-
-
-"------------------------------------------------------"
-
-dflag ifTrue: [prque inspect.].
-
-"Create encoding table"
 
 "------------------------------------------------------"
 
@@ -362,12 +310,7 @@ cflag ifTrue: [
 " mainish "
 
 "Input data"
-"
-stdout << 'execname: ' << execname << nl.
-stdout << 'version: ' << Smalltalk version << nl.
-stdout << 'hostSystem: ' << Smalltalk hostSystem << nl.
-stdout << 'arguments: ' << Smalltalk arguments << nl.
-"
+
 
 " program expects hzip.st options file1 file2"
 argSize := Smalltalk arguments size.
@@ -386,10 +329,6 @@ argSize < 2
    do: [:opt :arg|
       " Do something here to set the options flags "
       flags at: opt put: true.
-      'arguments:do: ' display.
-      opt displayNl.
-      arg displayNl.
-      filename displayNl.      
       flags at: opt put: true.
       "Check set to arguments"
       (opt = $d) ifTrue: [dflag := true.].
@@ -435,9 +374,20 @@ infile ~= nil
       uflag ifFalse:[
          "Construct frequency table"
          freqtable := rfile parseFile.
-
-         "enters freqtable into priority queue
-         as tree nodes"
+         dflag ifTrue:[
+            (0 to: freqtable size - 1)
+            do: [:index|
+               "index: " display.
+               index display.
+               ' ' display.
+               "item: " display.
+               item := freqtable at: index.
+               item display.
+               n1 display.
+            ].
+         ].
+         "Iterate over frequency table. 
+         insert leaf into priority queue"
          (0 to: freqtable size - 1)
          do: [:index | 
             |cleaf ccount cchar|
@@ -449,7 +399,8 @@ infile ~= nil
             ].         
          ].
 
-         "construct tree using priority queue"
+
+         "Construct tree using priority queue"
          [prque size > 1] whileTrue:[
             |last seclast tree treechar treecount|
             last := prque removeFirst.
@@ -464,6 +415,7 @@ infile ~= nil
          ].
          dflag ifTrue: [prque inspect.].
 
+
          "remove tree from priority queue"
          huffman_tree := prque removeFirst.
 
@@ -474,6 +426,8 @@ infile ~= nil
             index := char asInteger.
             encodetable at: index put: string.
          ] prefix: ''.
+
+
       ]
 
 
