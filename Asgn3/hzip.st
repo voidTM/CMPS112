@@ -6,8 +6,20 @@ dflag := false.
 cflag := false.
 tflag := false.
 uflag := false.
-infile := ''.
+infile := nil.
 outfile := stdout.
+
+opFlag := nil.
+
+"------------------------------------------------------"
+"Globals"
+flags := Dictionary new.
+   (flags at: $d put: false).
+   (flags at: $t put: false).
+   (flags at: $c put: false).
+   (flags at: $u put: false).
+
+
 
 "------------------------------------------------------"
 "arrays?"
@@ -95,17 +107,6 @@ Object subclass: Leaf [
       visitor value: char value: string.
    ]
 
-   binTreeDump: aBitstream [
-      aBitstream putBit: 0.
-      (1 to: 8) do: [:index|
-      aBitstream putBitL ((self char asInteger) bitAt: index)].
-      char asInteger = 0 ifTrue:[
-        aBitstream putBit: 0.
-      ].
-      char asInteger = 256 ifTrue:[
-        aBistream putBit: 1.
-      ].
-   ]
 ]
 
 
@@ -137,11 +138,6 @@ Leaf subclass: Tree [
       right inorder: visitor prefix: string, '1'.
    ]
 
-   binTreeDump: aBitstream [
-      left binTreeDump: aBitstream.
-      right binTreeDump: aBitstream.
-      aBitstream putBit: 1.
-   ]
 ]
 
 "------------------------------------------------------"
@@ -191,10 +187,13 @@ Object subclass: ZeroArray [
 
 ]
 
+
+" FILE I/O?"
 "taken from catfile.st"
 
 FileStream extend [
    nl := Character nl.
+   
    catFile [
       |count|
       count := 0.
@@ -297,10 +296,6 @@ dflag ifTrue: [prque inspect.].
 "------------------------------------------------------"
 " input and output here "
 " mainish "
-inFile := nil.
-outFile := nil.
-flag := nil.
-dFlag := nil.
 
 stdout << 'execname: ' << execname << nl.
 stdout << 'version: ' << Smalltalk version << nl.
@@ -308,38 +303,88 @@ stdout << 'hostSystem: ' << Smalltalk hostSystem << nl.
 stdout << 'arguments: ' << Smalltalk arguments << nl.
 
 
-"  "
-(1 to: Smalltalk arguments size)
-do: [:index |
-    'argument[' display.
-    index display.
-    '] = "' display.
-    (Smalltalk arguments at: index) display.
-    '"' displayNl.
+" program expects hzip.st options file1 file2"
+argSize := Smalltalk arguments size.
+flagF := a.
+" program expects hzip.st options file1 file2"
+argSize < 2
+  ifTrue: [
+    stderr << 'Arugment amount mismatch' << nl.
+    ObjectMemory quit.
+  ] ifFalse: [
+   " parse each argument as a tuple 
+   of option and arguments"
+
+   | file_count |
+   file_count := 0.
+   Smalltalk arguments: '-t -c -u -d'
+   do: [:opt :arg|
+      " Do something here to set the options flags "
+      flags at: opt put: true.
+      'arguments:do: ' display.
+      opt displayNl.
+      arg displayNl.
+      filename displayNl.      
+      flags at: opt put: true.
+      "Check set to arguments"
+      (opt = $d) ifTrue: [dflag := true.].
+      (opt = $c) ifTrue: [cflag := true.].
+      (opt = $t) ifTrue: [tflag := true.].
+      (opt = $u) ifTrue: [uflag := true.].
+
+      arg ~= nil
+         ifTrue:[
+         file_count := file_count + 1.
+         file_count = 1
+         ifTrue:[
+            "should later on open and asign filestream"
+            infile := arg.
+
+         ]ifFalse:[
+            file_count = 2
+            ifTrue:[
+            "should later on open and assign filestream"
+            outfile := arg.
+            ]
+         ]
+      ]
+   ]
+   ifError: [
+      stderr << 'Error: invalid option' << nl.
+      ObjectMemory quit.
+   ]  
 ].
 
-"  "
-(1 to: Smalltalk getArgc)
-do: [:argi |
-   'argv[' display.
-   argi display.
-   '] = "' display.
-   (Smalltalk getArgv: argi) display.
-   '"' displayNl.
-].
 
-" parse"
-Smalltalk arguments: '-t -c -u -d'
-do: [:opt :arg |
-   'arguments:do: ' display.
-   opt display.
-   ' ' display.
-   arg displayNl.
-]
-ifError: [
-   'Error: invalid option' displayNl.
-   '--foo'
-]
+" operate on infile"
+infile ~= nil
+  ifTrue:[
+    [   
+      |rfile|
+      rfile := FileStream open: infile
+          mode: FileStream read.
+      rfile catFile.
+      rfile close.
+    ] on: SystemExceptions.FileError do: [:signal |
+      |errno|
+      errno := File errno.
+      stdout flush.
+      stderr << execname << ': ' << infile << ': '
+          << signal messageText << nl.
+      stderr flush.
+      ObjectMemory quit.
+    ]
+]. 
 
-'$RCSfile: cmdline.st,v $' display.
-'finished.' displayNl.
+
+
+"UNIT TESTS HERE
+flags displayNl.
+
+dflag displayNl.
+cflag displayNl.
+tflag displayNl.
+uflag displayNl.
+infile displayNl.
+outfile displayNl.
+"
