@@ -9,14 +9,15 @@ uflag := false.
 infile := ''.
 outfile := stdout.
 
+opFlag := nil.
 
 "------------------------------------------------------"
 "Globals"
 flags := Dictionary new.
-   (flags at: '$d' put: false).
-   (flags at: '$t' put: false).
-   (flags at: '$c' put: false).
-   (flags at: '$u' put: false).
+   (flags at: $d put: false).
+   (flags at: $t put: false).
+   (flags at: $c put: false).
+   (flags at: $u put: false).
 
 
 
@@ -279,21 +280,40 @@ argSize < 2
    " parse each argument as a tuple 
    of option and arguments"
 
+   | file_count |
+   file_count := 0.
    Smalltalk arguments: '-t -c -u -d'
    do: [:opt :arg |
       " Do something here to set the options flags "
-      flags at: opt ifPresent: [flags at: opt put: true].
+      flags at: opt put: true.
       'arguments:do: ' display.
       opt displayNl.
       stdout << opt << nl.
       ' ' display.
-      arg displayNl.
+      
       flags at: opt put: true.
       "Check set to arguments"
       (opt == $d) ifTrue: [dflag := true.].
       (opt == $c) ifTrue: [cflag := true.].
       (opt == $t) ifTrue: [tflag := true.].
       (opt == $u) ifTrue: [uflag := true.].
+
+      arg ~= nil
+         ifTrue:[
+         file_count := file_count + 1.
+         file_count == 1
+         ifTrue:[
+            "should later on open and asign filestream"
+            infile := arg
+         ]ifFalse:[
+            file_count == 2
+            ifTrue:[
+            "should later on open and assign filestream"
+            outfile := arg
+            ]
+         ]
+      ]
+
    ]
    ifError: [
       stderr << 'Error: invalid option' << nl.
@@ -302,4 +322,12 @@ argSize < 2
 ].
 
 
-flags at: $c display.
+"UNIT TESTS HERE"
+flags display.
+
+dflag displayNl.
+cflag displayNl.
+tflag displayNl.
+uflag displayNl.
+infile displayNl.
+outfile displayNl.

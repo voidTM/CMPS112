@@ -4,7 +4,11 @@
 "Parse command line arguments"
 ""
 
-
+flags := Dictionary new.
+   (flags at: $d put: false).
+   (flags at: $t put: false).
+   (flags at: $c put: false).
+   (flags at: $u put: false).
 
 
 execname := '$RCSfile: cmdline.st,v $' =~ '.*: (.*),v.*' at: 1.
@@ -50,14 +54,13 @@ argSize < 2
    Smalltalk arguments: '-t -c -u -d'
    do: [:opt :arg |
       " Do something here to set the options flags "
-      flags at: opt ifPresent: [flags at: opt put: true].
       'arguments:do: ' display.
       opt displayNl.
       stdout << opt << nl.
       ' ' display.
       arg displayNl.
-      flags at: opt put: true.
       "Check set to arguments"
+      flags at: opt put: true.
       (opt == $d) ifTrue: [dFlag := true.].
       (opt == $c) ifTrue: [cFlag := true.].
       (opt == $t) ifTrue: [tFlag := true.].
@@ -68,5 +71,6 @@ argSize < 2
       ObjectMemory quit.
    ]  
 ].
+
 
 flags display.
