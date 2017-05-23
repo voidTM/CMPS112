@@ -110,7 +110,7 @@ Object subclass: Leaf [
    binTreeDump: aBitstream [
       aBitstream putBit: 0.
       (1 to: 8) do: [:index|
-      aBitstream putBitL ((self char asInteger) bitAt: index)].
+      aBitstream putBit: ((self char asInteger) bitAt: index)].
       char asInteger = 0 ifTrue:[
         aBitstream putBit: 0.
       ].
@@ -118,7 +118,6 @@ Object subclass: Leaf [
         aBistream putBit: 1.
       ].
    ]
-
 ]
 
 
@@ -243,7 +242,7 @@ writefile := FileStream open: outfile
                         mode: FileStream write.
 
 "Create frequency table"
-
+" move creation to being a global? "
 |freqtable|
 
 uflag ifFalse: [freqtable := readfile parseFile.].
@@ -343,7 +342,8 @@ cflag ifTrue: [
 
 "------------------------------------------------------"
 " Uncompressing "
-
+" Read in tree and reconstruct"
+" read data bit by bit "
 
 
 
@@ -351,20 +351,21 @@ cflag ifTrue: [
 " input and output here "
 " mainish "
 
+"Input data"
+"
 stdout << 'execname: ' << execname << nl.
 stdout << 'version: ' << Smalltalk version << nl.
 stdout << 'hostSystem: ' << Smalltalk hostSystem << nl.
 stdout << 'arguments: ' << Smalltalk arguments << nl.
-
+"
 
 " program expects hzip.st options file1 file2"
 argSize := Smalltalk arguments size.
 flagF := a.
-" program expects hzip.st options file1 file2"
 argSize < 2
   ifTrue: [
     stderr << 'Arugment amount mismatch' << nl.
-    ObjectMemory quit.
+      ObjectMemory quit: 1.
   ] ifFalse: [
    " parse each argument as a tuple 
    of option and arguments"
@@ -404,8 +405,8 @@ argSize < 2
       ]
    ]
    ifError: [
-      stderr << 'Error: invalid option' << nl.
-      ObjectMemory quit.
+      stderr << 'Error: invalid flag' << nl.
+      ObjectMemory quit: 1.
    ]  
 ].
 
@@ -426,27 +427,26 @@ infile ~= nil
       stderr << execname << ': ' << infile << ': '
           << signal messageText << nl.
       stderr flush.
-      ObjectMemory quit.
+      ObjectMemory quit: 1.
     ]
 ]. 
 
-" operate on infile"
-infile ~= nil
+" operate on outfile"
+outfile ~= nil
   ifTrue:[
     [   
       |rfile|
-      rfile := FileStream open: infile
-          mode: FileStream read.
-      rfile catFile.
+      rfile := FileStream open: outfile
+          mode: FileStream write.
       rfile close.
     ] on: SystemExceptions.FileError do: [:signal |
       |errno|
       errno := File errno.
       stdout flush.
-      stderr << execname << ': ' << infile << ': '
+      stderr << execname << ': ' << outfile << ': '
           << signal messageText << nl.
       stderr flush.
-      ObjectMemory quit.
+      ObjectMemory quit: 1.
     ]
 ]. 
 
