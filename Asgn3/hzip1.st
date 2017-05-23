@@ -4,14 +4,14 @@
 
 
 " REGEx on first part?"
-execname := '$RCSfile: cmdline.st,v $' =~ '.*: (.*),v.*' at: 1.
+execname := '$RCSfile: hzip.st,v $' =~ '.*: (.*),v.*' at: 1.
 nl := Character nl.
 dflag := false.
 cflag := false.
 tflag := false.
 uflag := false.
 infile := nil.
-outfile := stdout.
+outfile := nil.
 
 huffman_tree := nil.
 freqtable := nil.
@@ -90,8 +90,18 @@ Character extend [
    ]
 ]
 
+Character extend [
+   isGraph [
+      ^ (Character space < self) & (self <= $~)
+   ]
+   visible [
+      self isGraph ifTrue: [^ '$', self asString]
+                   ifFalse: [^ self asInteger printStringRadix: 16]
+   ]
+]
+
 Object subclass: BitStream [
-   |bitIndex byte myStream writeIndex writeByte|
+   |bitIndex byte myStream|
    BitStream class >> new: fileStream [
       |result|
       result := super new.
@@ -116,16 +126,6 @@ Object subclass: BitStream [
    currByte [
       ^byte
    ]
-   putBit: theBit [
-      writeIndex := writeIndex - 1.
-      writeByte := writeByte bitAt:
-                   writeIndex put: theBit.
-      writeIndex = 1 ifTrue: [
-         myStream nextPutByte: writeByte.
-         writeByte := 0.
-         writeIndex := 9.
-      ].
-   ].
 ]
 
 
@@ -179,7 +179,7 @@ Object subclass: Leaf [
       char asInteger = 256 ifTrue:[
         aBistream putBit: 1.
       ].
-   ]
+
 ]
 
 
@@ -279,24 +279,6 @@ tflag ifTrue: [
     readfile close.
 ].
 
-cflag ifTrue: [
-    |estring|
-    aBitstream := BitStream new: writefile.
-    readfile reset.
-    tree binTreeDump: aBitstream.
-    aBitstream putBit: 1.
-    [readfile atEnd not] whileTrue:[
-        |index|
-        index := readfile next asInteger.
-        estring := encodetable at: index.
-        aBitstream putString: estring. 
-    ].
-    estring := encodetable at: 256.
-    aBitstream putString: estring.
-    aBitstream padOut.
-    readfile close.
-    writefile close.
-].
 
 "------------------------------------------------------"
 " Uncompressing "
@@ -363,29 +345,29 @@ argSize < 2
 " operate on infile"
 infile ~= nil
   ifTrue:[
-    [   
+   [   
       |rfile wfile|
       rfile := FileStream open: infile
           mode: FileStream read.
 
-      rfile close.
 
       "either compression or tree"
-      uflag ifFalse:[
+      (tflag | cflag) ifTrue:[
          "Construct frequency table"
          freqtable := rfile parseFile.
          dflag ifTrue:[
             (0 to: freqtable size - 1)
             do: [:index|
-               "index: " display.
-               index display.
-               ' ' display.
-               "item: " display.
-               item := freqtable at: index.
-               item display.
-               n1 display.
+               (freqtable at: index) ~= nil
+               ifTrue:[
+                  stdout << 'Index ' << index << ' '.
+                  (freqtable at: index) displayNl.
+               ]
             ].
          ].
+
+         rfile close.
+
          "Iterate over frequency table. 
          insert leaf into priority queue"
          (0 to: freqtable size - 1)
@@ -428,49 +410,61 @@ infile ~= nil
          ] prefix: ''.
 
 
+         tflag ifTrue:[
+            (0 to: encodetable size - 1)
+            do: [:index|
+            |char count string|
+            count := freqtable at: index.
+            string := encodetable at: index.
+            count isInteger ifTrue:[
+               (index < 127) & (index > 32)
+               ifTrue:[
+                  char := index asCharacter.
+                  stdout << char << ' ' << count.
+                  stdout << ' ' << string << nl.
+               ]ifFalse:[
+                  stdout << index << ' ' << count. 
+                  stdout << ' ' << string << nl.
+               ]
+            ]]
+         ]ifFalse:[
+            |aBitstream estring|
+            "Compress the input file"
+            cflag ifTrue:[
+               " open out file for writing"
+               outfile ~= nil
+               ifTrue:[
+                  wfile := FileStream open: outfile
+                  mode: FileStream write.
+               ]ifFalse:[ wfile := stdout.].
+
+               rfile := FileStream open: infile
+                  mode: FileStream read.
+
+               aBitstream := Bitstream new: wfile.
+
+               "Write out the encoding tree" 
+               tree binTreeDump: aBitstream.
+               aBitstream putBit: 1.
+               [readfile atEnd not] whileTrue:[
+                  |index|
+                  index := readfile next asInteger.
+                  estring := encodetable at: index.
+                  aBitstream putString: estring.
+               ].
+               estring := encodetable at: 256.
+               aBitstream putString: estring.
+               aBitstream padOut.
+               wfile close.
+               rfile close.
+            ]
+         ]
       ]
-
-
-    ] on: SystemExceptions.FileError do: [:signal |
+   ] on: SystemExceptions.FileError do: [:signal |
       |errno|
       errno := File errno.
       stdout flush.
-      stderr << execname << ': ' << infile << ': '
-          << signal messageText << nl.
       stderr flush.
       ObjectMemory quit: 1.
     ]
 ]. 
-
-
-
-"UNIT TESTS HERE"
-flags displayNl.
-infile displayNl.
-outfile displayNl.
-
-(0 to: freqtable size - 1)
-do: [:index |
-    (freqtable at: index) ~= nil
-      ifTrue: [
-        stdout << 'Index ' << index << ' '.
-        (freqtable at: index) displayNl.
-      ]
-].
-
-
-prque inspect.
-
-huffman_tree inorder: [:char :string |
-   stdout << '[' << char << ']=' << string << nl.
-] prefix: ''.
-
-
-(0 to: encodetable size - 1)
-do: [:index |
-    (encodetable at: index) ~= nil
-      ifTrue: [
-        stdout << 'Index ' << index << ' '.
-        (encodetable at: index) displayNl.
-      ]
-].

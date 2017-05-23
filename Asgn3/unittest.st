@@ -281,6 +281,24 @@ infile ~= nil
       ] prefix: ''.
       
 
+      tflag ifTrue: [
+    (0 to encodetable size - 1)
+    do: [:index|
+        |char upperbound lowerbound count string|
+        lowerbound := index > 32.   "ASCII bigger than SPACE"
+        upperbound := index < 127.  "ASCII less than DELETE"
+        count := freqtable at: index.
+        string := encodetable at: index.
+        count isInteger ifTrue: [
+            char := index asCharacter.
+            stdout << char << ' ' << count << ' ' << string << n1.
+        ] ifFalse: [
+            stdout << index << ' ' << count << ' ' << string << n1.
+        ]. 
+    ].
+].
+
+
 
       rfile close.
     ] on: SystemExceptions.FileError do: [:signal |
@@ -325,3 +343,37 @@ do: [:index |
         (encodetable at: index) displayNl.
       ]
 ].
+
+
+
+cflag ifTrue: [
+    |estring|
+    aBitstream := BitStream new: writefile.
+    readfile reset.
+    tree binTreeDump: aBitstream.
+    aBitstream putBit: 1.
+    [readfile atEnd not] whileTrue:[
+        |index|
+        index := readfile next asInteger.
+        estring := encodetable at: index.
+        aBitstream putString: estring. 
+    ].
+    estring := encodetable at: 256.
+    aBitstream putString: estring.
+    aBitstream padOut.
+    readfile close.
+    writefile close.
+].
+
+
+   binTreeDump: aBitstream [
+      aBitstream putBit: 0.
+      (1 to: 8) do: [:index|
+      aBitstream putBit: ((self char asInteger) bitAt: index)].
+      char asInteger = 0 ifTrue:[
+        aBitstream putBit: 0.
+      ].
+      char asInteger = 256 ifTrue:[
+        aBistream putBit: 1.
+      ].
+   ]
