@@ -39,7 +39,7 @@ Character extend [
 ]
 
 Object subclass: BitStream [
-   |bitIndex byte myStream|
+   |bitIndex byte myStream writeIndex writeByte|
    BitStream class >> new: fileStream [
       |result|
       result := super new.
@@ -63,6 +63,29 @@ Object subclass: BitStream [
    ]
    currByte [
       ^byte
+   ]
+   putBit: theBit [
+      writeIndex := writeIndex - 1.
+      writeByte := writeByte bitAt:
+                   writeIndex put: theBit.
+      writeIndex = 1 ifTrue: [
+         myStream nextPutByte: writeByte.
+         writeByte := 0.
+         writeIndex := 9.
+      ].
+   ].
+   putString: theString [
+      theString do: [:index|
+         (index asString = '0')
+            ifTrue: [self putBit: 0]
+            ifFalse: [self putBit: 1].
+      ].
+   ].
+   padOut[
+      [writeIndex > 1 & writeIndex < 9] whileFalse: [
+         self putBit: 0.
+         writeIndex := writeIndex - 1.
+      ].
    ]
 ]
 
@@ -110,7 +133,7 @@ Object subclass: Leaf [
    binTreeDump: aBitstream [
       aBitstream putBit: 0.
       (1 to: 8) do: [:index|
-      aBitstream putBitL ((self char asInteger) bitAt: index)].
+      aBitstream putBit: ((self char asInteger) bitAt: index)].
       char asInteger = 0 ifTrue:[
         aBitstream putBit: 0.
       ].
@@ -326,7 +349,7 @@ tflag ifTrue: [
         lowerbound := index > 32.   "ASCII bigger than SPACE"
         upperbound := index < 127.  "ASCII less than DELETE"
         count := freqtable at: index.
-        string := prque at: index.
+        string := encodetable at: index.
         count isInteger ifTrue: [
             char := index asCharacter.
             stdout << char << ' ' << count << ' ' << string << n1.
@@ -338,7 +361,22 @@ tflag ifTrue: [
 ].
 
 cflag ifTrue: [
-
+    |estring|
+    aBitstream := BitStream new: writefile.
+    readfile reset.
+    tree binTreeDump: aBitstream.
+    aBitstream putBit: 1.
+    [readfile atEnd not] whileTrue:[
+        |index|
+        index := readfile next asInteger.
+        estring := encodetable at: index.
+        aBitstream putString: estring. 
+    ].
+    estring := encodetable at: 256.
+    aBitstream putString: estring.
+    aBitstream padOut.
+    readfile close.
+    writefile close.
 ].
 
 "------------------------------------------------------"
