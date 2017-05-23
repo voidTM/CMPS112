@@ -241,6 +241,8 @@ infile ~= nil
 
       freqtable := rfile parseFile.
 
+      "enters freqtable into priority queue
+       as tree nodes"
       (0 to: freqtable size - 1)
       do: [:index | 
         |cleaf ccount cchar|
@@ -250,6 +252,20 @@ infile ~= nil
             cleaf := Leaf new: cchar count: ccount.
             prque add: cleaf. 
         ].
+      ].
+
+      "construct tree"
+      [prque size > 1] whileTrue:[
+        |last seclast tree treechar treecount|
+        last := prque removeFirst.
+        seclast := prque removeFirst.
+        treechar := last char.
+        treecount := last count + seclast count.
+        tree := Tree new: treechar
+                    count: treecount
+                    left: last
+                    right: seclast.
+        prque add: tree.
       ].
 
 

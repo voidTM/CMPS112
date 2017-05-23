@@ -29,3 +29,16 @@ keyword: mssages with any number of arguments
 	every message gives an object
 		thus can be combined
 Smalltalk arguments -> returns list of arguments passed from the command line
+
+requires 2 ti 3 args
+
+do: [:opt :arg |
+	gets 1 tuple of opt, arg at a time
+	
+stdin out and said are std
+
+SortedCollection 
+(Tree(<16r0100>,
+	991,Tree(<16r0100>,
+	16,Leaf(<16r0100>,1),Leaf(,15)),Leaf(a,975)) 
+)
