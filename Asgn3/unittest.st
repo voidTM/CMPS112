@@ -15,6 +15,8 @@ freqtable := nil.
 
 prque := SortedCollection new.
 
+huffman_tree := nil.
+
 "ARRAY"
 Object subclass: ZeroArray [
    |theArray|
@@ -268,6 +270,9 @@ infile ~= nil
         prque add: tree.
       ].
 
+      huffman_tree := prque removeFirst.
+
+
 
       rfile close.
     ] on: SystemExceptions.FileError do: [:signal |
@@ -297,4 +302,8 @@ do: [:index |
 ].
 
 
-prque display.
+prque inspect.
+
+huffman_tree inorder: [:char :string |
+   stdout << '[' << char << ']=' << string << nl.
+] prefix: ''.
