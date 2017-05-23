@@ -71,6 +71,8 @@ infile ~= nil
       |rfile|
       rfile := FileStream open: infile
           mode: FileStream read.
+
+      freqtable := readfile parseFile.
       rfile close.
     ] on: SystemExceptions.FileError do: [:signal |
       |errno|
