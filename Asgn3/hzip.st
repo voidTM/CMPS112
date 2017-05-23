@@ -107,6 +107,18 @@ Object subclass: Leaf [
       visitor value: char value: string.
    ]
 
+   binTreeDump: aBitstream [
+      aBitstream putBit: 0.
+      (1 to: 8) do: [:index|
+      aBitstream putBitL ((self char asInteger) bitAt: index)].
+      char asInteger = 0 ifTrue:[
+        aBitstream putBit: 0.
+      ].
+      char asInteger = 256 ifTrue:[
+        aBistream putBit: 1.
+      ].
+   ]
+
 ]
 
 
@@ -136,6 +148,12 @@ Leaf subclass: Tree [
    inorder: visitor prefix: string [
       left inorder: visitor prefix: string, '0'.
       right inorder: visitor prefix: string, '1'.
+   ]
+
+   binTreeDump: aBitstream [
+      left binTreeDump: aBitstream.
+      right binTreeDump: aBitstream.
+      aBitstream putBit: 1.
    ]
 
 ]
@@ -216,7 +234,6 @@ FileStream extend [
    ]
 ]
 
-
 |readfile writefile|
 
 readfile := FileStream open: infile
@@ -225,13 +242,104 @@ readfile := FileStream open: infile
 writefile := FileStream open: outfile
                         mode: FileStream write.
 
+"Create frequency table"
+
 |freqtable|
 
 uflag ifFalse: [freqtable := readfile parseFile.].
 
-dflag ifTrue:[].
+dflag ifTrue:[
+    (0 to: freqtable size - 1)
+    do: [:index|
+        "index: " display.
+        index display.
+        ' ' display.
+        "item: " display.
+        item := freqtable at: index.
+        item display.
+        n1 display.
+    ].
+].
+
+"Iterate over frequency table. insert leaf into priority queue"
 
 |prque|
+
+prque := SortedCollection new.
+
+uflag if False: [
+    (0 to: freqtable size - 1)
+    do: [:index | 
+        |cleaf ccount cchar|
+        ccount := freqtable at: index.
+        ccount isInteger ifTrue:[
+            cchar := index asCharacter.
+            cleaf := Leaf new: cchar count: ccount.
+            prque add: cleaf. 
+        ].
+    ].
+].
+
+dflag ifTrue: [prque inspect.].
+
+"Create new tree by removing smallest two elements"
+
+uflag ifFalse:[
+    [prque size > 1] whileTrue:[
+        |last seclast tree treechar treecount|
+        last := prque removeFirst.
+        seclast := prque removeFirst.
+        treechar := last char.
+        treecount := last count + seclast count.
+        tree := Tree new: treechar
+                    count: treecount
+                    left: last
+                    right: seclast.
+        prque add: tree.
+    ].
+].
+
+dflag ifTrue: [prque inspect.].
+
+"Create encoding table"
+
+|tree encodetable|
+
+uflag ifFalse: [ tree := prque removeLast.].
+
+encodetable := ZeroArray new: 257.
+
+uflag ifFalse: [
+    tree inorder: [:char :string |
+        |index count|
+        index := char asInteger.
+        encodetable at: index put: string.
+    ] prefix: ''.
+].
+
+"Write out encoding table"
+
+tflag ifTrue: [
+    (0 to encodetable size - 1)
+    do: [:index|
+        |char upperbound lowerbound count string|
+        lowerbound := index > 32.   "ASCII bigger than SPACE"
+        upperbound := index < 127.  "ASCII less than DELETE"
+        count := freqtable at: index.
+        string := prque at: index.
+        count isInteger ifTrue: [
+            char := index asCharacter.
+            stdout << char << ' ' << count << ' ' << string << n1.
+        ] ifFalse: [
+            stdout << index << ' ' << count << ' ' << string << n1.
+        ]. 
+    ].
+    readfile close.
+].
+
+cflag ifTrue: [
+
+].
 
 "------------------------------------------------------"
 " Uncompressing "
