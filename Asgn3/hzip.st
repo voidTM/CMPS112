@@ -6,7 +6,7 @@ dflag := false.
 cflag := false.
 tflag := false.
 uflag := false.
-infile := ''.
+infile := nil.
 outfile := stdout.
 
 opFlag := nil.
@@ -187,10 +187,13 @@ Object subclass: ZeroArray [
 
 ]
 
+
+" FILE I/O?"
 "taken from catfile.st"
 
 FileStream extend [
    nl := Character nl.
+   
    catFile [
       |count|
       count := 0.
@@ -246,28 +249,6 @@ stdout << 'hostSystem: ' << Smalltalk hostSystem << nl.
 stdout << 'arguments: ' << Smalltalk arguments << nl.
 
 
-"  "
-(1 to: Smalltalk arguments size)
-do: [:index |
-    'argument[' display.
-    index display.
-    '] = "' display.
-    (Smalltalk arguments at: index) display.
-    '"' displayNl.
-].
-
-"  "
-(1 to: Smalltalk getArgc)
-do: [:argi |
-   'argv[' display.
-   argi display.
-   '] = "' display.
-   (Smalltalk getArgv: argi) display.
-   '"' displayNl.
-].
-
-
-
 " program expects hzip.st options file1 file2"
 argSize := Smalltalk arguments size.
 flagF := a.
@@ -283,37 +264,36 @@ argSize < 2
    | file_count |
    file_count := 0.
    Smalltalk arguments: '-t -c -u -d'
-   do: [:opt :arg |
+   do: [:opt :arg|
       " Do something here to set the options flags "
       flags at: opt put: true.
       'arguments:do: ' display.
       opt displayNl.
-      stdout << opt << nl.
-      ' ' display.
-      
+      arg displayNl.
+      filename displayNl.      
       flags at: opt put: true.
       "Check set to arguments"
-      (opt == $d) ifTrue: [dflag := true.].
-      (opt == $c) ifTrue: [cflag := true.].
-      (opt == $t) ifTrue: [tflag := true.].
-      (opt == $u) ifTrue: [uflag := true.].
+      (opt = $d) ifTrue: [dflag := true.].
+      (opt = $c) ifTrue: [cflag := true.].
+      (opt = $t) ifTrue: [tflag := true.].
+      (opt = $u) ifTrue: [uflag := true.].
 
       arg ~= nil
          ifTrue:[
          file_count := file_count + 1.
-         file_count == 1
+         file_count = 1
          ifTrue:[
             "should later on open and asign filestream"
-            infile := arg
+            infile := arg.
+
          ]ifFalse:[
-            file_count == 2
+            file_count = 2
             ifTrue:[
             "should later on open and assign filestream"
-            outfile := arg
+            outfile := arg.
             ]
          ]
       ]
-
    ]
    ifError: [
       stderr << 'Error: invalid option' << nl.
@@ -322,8 +302,29 @@ argSize < 2
 ].
 
 
+" operate on infile"
+infile ~= nil
+  ifTrue:[
+    [   
+      |rfile|
+      rfile := FileStream open: infile
+          mode: FileStream read.
+      rfile close.
+    ] on: SystemExceptions.FileError do: [:signal |
+      |errno|
+      errno := File errno.
+      stdout flush.
+      stderr << execname << ': ' << infile << ': '
+          << signal messageText << nl.
+      stderr flush.
+      ObjectMemory quit.
+    ]
+]. 
+
+
+
 "UNIT TESTS HERE"
-flags display.
+flags displayNl.
 
 dflag displayNl.
 cflag displayNl.
