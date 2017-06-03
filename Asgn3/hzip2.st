@@ -17,7 +17,7 @@ huffman_tree := nil.
 freqtable := nil.
 encodetable := nil.
 prque := SortedCollection new.
-
+bBitstream := nil.
 
 "------------------------------------------------------"
 "Globals"
@@ -101,6 +101,8 @@ Object subclass: BitStream [
    init: fileStream [
       myStream := fileStream.
       bitIndex := 1.
+      writeIndex := 9.
+      writeByte := 0.
    ]
    nextBit [
       bitIndex = 1 ifTrue: [
@@ -126,6 +128,24 @@ Object subclass: BitStream [
          writeIndex := 9.
       ].
    ]
+
+   putString: theString [
+      theString do: [:index|
+         (index asString = '0')
+            ifTrue: [self putBit: 0]
+            ifFalse: [self putBit: 1].
+      ].
+   ]
+
+   padOut[
+      [writeIndex > 1 & writeIndex < 9] whileFalse: [
+         self putBit: 0.
+         writeIndex := writeIndex - 1.
+      ].
+   ]
+
+
+
 ]
 
 
@@ -135,6 +155,7 @@ Object subclass: Leaf [
    |char count|
    char [ ^ char ]
    count [ ^ count ]
+   isLeaf [^ true ]
 
    Leaf class >> new [
       self shouldNotImplement
@@ -211,6 +232,7 @@ Leaf subclass: Tree [
       (self printBase: aStream) << ',' << left << ',' << right << ')'.
    ]
 
+   isLeaf [^ false]
    inorder: visitor prefix: string [
       left inorder: visitor prefix: string, '0'.
       right inorder: visitor prefix: string, '1'.
@@ -329,11 +351,13 @@ argSize < 2
 ].
 
 
+
+
 " operate on infile"
 infile ~= nil
   ifTrue:[
    [   
-      |rfile wfile|
+      |rfile wfile aBitstream|
       rfile := FileStream open: infile
           mode: FileStream read.
 
@@ -415,7 +439,7 @@ infile ~= nil
                ]
             ]]
          ]ifFalse:[
-            |aBitstream estring|
+            |estring|
             "Compress the input file"
             cflag ifTrue:[
                " open out file for writing"
@@ -429,14 +453,14 @@ infile ~= nil
                rfile := FileStream open: infile
                   mode: FileStream read.
 
-               aBitstream := Bitstream new: wfile.
+               aBitstream := BitStream new: wfile.
 
                "Write out the encoding tree" 
-               tree binTreeDump: aBitstream.
+               huffman_tree binTreeDump: aBitstream.
                aBitstream putBit: 1.
-               [readfile atEnd not] whileTrue:[
+               [rfile atEnd not] whileTrue:[
                   |index|
-                  index := readfile next asInteger.
+                  index := rfile next asInteger.
                   estring := encodetable at: index.
                   aBitstream putString: estring.
                ].
@@ -447,7 +471,126 @@ infile ~= nil
                rfile close.
             ]
          ]
+      ]ifFalse:[
+      uflag ifTrue:[
+         |outBitstream inBitstream stack treecomp intermedtree|
+         wfile := stdout.
+         outfile ~= nil
+         ifTrue:[
+            wfile := FileStream open: outfile
+            mode: FileStream write.
+            ].
+
+         rfile := FileStream open: infile
+            mode: FileStream read.
+
+         outBitstream := BitStream new: rfile.
+         inBitstream := BitStream new: wfile.
+
+         stack := OrderedCollection new.
+         treecomp := false.
+         [(rfile atEnd not) & (treecomp = false)]
+          whileTrue:[
+               |ordChar realChar baseTwo|
+               "Read one bit from tree"
+               ordChar := outBitstream nextBit.
+               ordChar = 0 ifTrue: [
+                  realChar :=0.
+                  baseTwo :=1.
+                  (1 to: 8) 
+                  do: [:skip|
+                  |curbit|
+                  curbit := outBitstream nextBit.
+                  (curbit = 1)
+                     ifTrue: [realChar := realChar + baseTwo.].
+                  baseTwo := baseTwo * 2.
+                  ].
+                  (realChar = 0) ifTrue:[
+                     |curbit|
+                     curbit := outBitstream nextBit.
+                     curbit = 1 
+                        ifTrue: [
+                           stack addFirst: 
+                           (Leaf new: 256 asCharacter count: 1).
+                        ]ifFalse:[
+                           stack addFirst:
+                              (Leaf new: 0 asCharacter count: 1).
+                        ].
+                     ]ifFalse:[
+                     stack addFirst:
+                     (Leaf new: realChar 
+                        asCharacter count: 1).
+                     ].
+               ]ifFalse:[
+                     stack size > 0 ifTrue: [
+                        right := stack removeFirst.
+                        stack size = 0 ifTrue: [
+                           huffman_tree := right.
+                           treecomp := true.
+                        ] ifFalse: [
+                        left := stack removeFirst.
+                        stack addFirst: (
+                        Tree new: (left char) count: 1
+                        left: left right: right).
+                        ]
+                     ]
+               ].
+            ].
+         
+
+         dflag ifTrue: [huffman_tree inspect.].
+
+         intermedtree := huffman_tree.
+         end := false.
+         [(rfile atEnd not) & (end = false)] 
+         whileTrue: [
+            |endBit|
+            endBit := outBitstream nextBit.
+            endBit = 0 ifTrue: [
+               intermedtree isLeaf 
+               ifTrue:[
+                  intermedtree char asInteger = 256 
+                  ifTrue: [end = true.]
+                  ifFalse: [
+                     intermedtree := intermedtree left.
+                     intermedtree isLeaf 
+                     ifTrue: [
+                        intermedtree char asInteger = 256
+                        ifTrue: [end = true.]
+                        ifFalse: [writefile << intermedtree char.
+                        ].
+                        intermedtree := decodetree.
+                     ]
+                  ]
+               ]
+            ] ifFalse: [
+               intermedtree isLeaf 
+               ifTrue: [
+               intermedtree char asInteger = 256 
+                  ifTrue: [end := true]
+                  ifFalse: [
+                     intermedtree = intermedtree right.
+                     intermedtree isLeaf
+                     ifTrue: [
+                        intermedtree char asInteger = 256 
+                        ifTrue:[end = true.]
+                        ifFalse: [
+                           writefile << intermedtree char.
+                        ].
+                        intermedtree := decodetree.
+                     ].
+                  ].
+               ].
+            ].
+         ].
+
+
+         wfile close.
+         rfile close.
+         
       ]
+      ]
+
    ] on: SystemExceptions.FileError do: [:signal |
       |errno|
       errno := File errno.
@@ -455,4 +598,5 @@ infile ~= nil
       stderr flush.
       ObjectMemory quit: 1.
     ]
-]. 
+
+].

@@ -85,4 +85,5 @@ uflag ifTrue: [
   ].
   readfile close.
   writefile close.
+  ObjectMemory quit: 0.
 ].
