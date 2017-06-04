@@ -1,0 +1,11 @@
+#!/bin/sh
+# $Id: mk.tests,v 1.1 2016-11-08 15:52:34-08 - - $
+#
+# Test program to run gprolog on each set of test cases.
+#
+
+checksource functions.pl 2>&1 | tee checksource.log
+for test in group*.tests
+do
+   gprolog <$test 2>&1 | tee $test.output
+done

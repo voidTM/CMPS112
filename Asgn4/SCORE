@@ -1,0 +1,65 @@
+
+Grader:  copy this file into the student's directory and grade
+according to the following point values.
+
+The numbers in parens are the max points for a particular
+section.  Enter some number between 0 and the max depending
+on the quality of the work.
+
+Run the script mk.tests, wich runs checksource and each of
+the test files.
+
+________________________________________________________________________
+PROGRAM SOURCE CODE. (30)
+
+   (3) checksource *.pl >checksource.log
+       Deduct #complaints / 5, but not more than 5 points.
+
+   (3) Neat general formatting and indentation.  Readable
+       variable names, functions, and terms.
+
+   (6) Predicates written in guess-and-verify style.
+
+   (6) Keeps lists of airports visited to avoid infinite loops.
+
+   (6) Code uses some kind of graph traversal algorithm.
+
+   (6) Code for proper handling of times, miles, and connections.
+
+total source code: /30
+min 1, max 30.
+
+________________________________________________________________________
+TEST RUN.  (30)
+
+Run mk.tests and check the output.
+
+   (6) group0.tests - trivial test
+
+   (6) group1.tests - do we get a proper itinerary for each?
+
+   (6) group2.tests - do we get a proper itinerary for each?
+
+   (4) group3.tests - error messages for zero-fly queries.
+
+   (4) group4.tests - error messages for nonexistent airports.
+
+   (4) group5.tests - prints something, anything, but not points
+       if this produces an non-terminating loop.
+
+total testing: /30
+min 0, max 30
+
+________________________________________________________________________
+
+Add program + testing totals, giving:
+SUBTOTAL=
+
+If pair programming, TOTALSCORE = SUBTOTAL - TOTAL1.
+If not, TOTALSCORE = SUBTOTAL.
+
+TOTALSCORE=
+min 1, max 60
+
+$Id: SCORE,v 1.1 2016-11-08 15:52:34-08 - - $
+
