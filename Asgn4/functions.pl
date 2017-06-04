@@ -39,7 +39,17 @@ calibrate(hours, minutes) :-
     (   minutes > 59 ->
         minutes is minutes - 60,
         hours is hours + 1,
-    ;
     ).
 
+overnight_flight(hours, minutes) :-
+    (   hours >= 24 ->
+        write('Overnight flight.'), nl.
+    ;   write('Not overnight flight.'), nl.
+    ). 
 
+transfer_flight(time(arrival_hours, arrival_minutes),
+        time(depart_hours, depart_minutes)) :-
+    (   depart_minutes - arrival_minutes < 30 ->
+        write('Invalid transfer.'), nl.
+    ;   write('Valid transfer.'), nl.
+    ).
