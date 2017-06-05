@@ -3,7 +3,7 @@
 
 /* functions */
 /*Return the distance in mile of the two location */
-haversine_radians( latA, latB, lonA, lonB, distance) :-
+haversine( latA, latB, lonA, lonB, distance) :-
    radius is 3,959,
    dlon is lonB - lonA,
    dlat is latB - latA,
@@ -27,16 +27,11 @@ add_time(time(hA,mA), time(hB,mB), time(hC,mC)) :-
   calibrate(hC, mC).
 
 
-/* Given a location, fetch the north west lat long
- * from the database
- */
-get_airport_data(airport,Lat1, Lon1, Lat2, Lon2) :-
-  airport(Airport, _, degmin(A, B), degmin(C,D)),
-  /*write(H),*/
-  Lat1 is A,
-  Lon1 is B,
-  Lat2 is C,
-  Lon2 is D.
+/* Get the latitude and longitude of an airport */
+get_airport_data(airport, latitude, longitude) :-
+  airport(airport, _, degmin(A, B), degmin(C,D)),
+  dms_to_radian(A, B, latitude),
+  dms_to_radian(C, D, longitude).
 
 /*calculate flight time from one airport to another? */
 calc_arrival_time(depart_time, arrival_time, distance) :-
@@ -50,7 +45,10 @@ calc_arrival_time(depart_time, arrival_time, distance) :-
 /* calculate time for a particular leg of a flight? */
 flight_leg(departure, arrival, arrival_time)
   flight(departure, arrival, depart_time),
-  get_airport_data
+  get_airport_data(departure, lat_d, lon_d),
+  get_airport_data(arrival, lat_a, lon_a),
+  haversine(lat_d, lat_a, lon_d, lon_a, distance),
+  calc_arrival_time(depart_time, arrival_time, distance).
 
 /* round times up to ensure 60 minutes max  */
 calibrate(hours, minutes) :-
