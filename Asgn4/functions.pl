@@ -37,7 +37,7 @@ find_arrival_time(time(depart_hours, depart_minutes), distance,
 
 calibrate(hours, minutes) :-
     (   minutes > 59 ->
-        minutes is minutes - 60,
+        minutes is mod(minutes, 60),
         hours is hours + 1,
     ).
 
@@ -52,4 +52,14 @@ transfer_flight(time(arrival_hours, arrival_minutes),
     (   depart_minutes - arrival_minutes < 30 ->
         write('Invalid transfer.'), nl.
     ;   write('Valid transfer.'), nl.
+    ).
+
+flight_search(source, destination) :-
+    (   source =/= destination ->
+        flight(source, A1, A2),
+        format(),
+        format(),
+        (   A1 =/= destination ->
+            flight_search(A1, destination),
+        ),
     ).
