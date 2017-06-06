@@ -50,6 +50,8 @@ flight_leg(departure, arrival, arrival_time)
   haversine(lat_d, lat_a, lon_d, lon_a, distance),
   calc_arrival_time(depart_time, arrival_time, distance).
 
+/* traversal algorithm to find flight legs? */
+
 /* round times up to ensure 60 minutes max  */
 calibrate(hours, minutes) :-
     minutes is mod(minutes, 60),
