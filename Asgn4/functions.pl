@@ -57,9 +57,15 @@ calibrate(hours, minutes) :-
     minutes is mod(minutes, 60),
     hours is hours + floor(minutes / 60).
 
+/* converts hours minutes into minutes */
+hrs2mins(time(hours, minutes), Mins) :-
+    Mins is hours * 60 + minutes.
+
+	
 /* check to make sure flight does not go past 1 day */
-overnight_flight(hours, minutes) :-
-    (   hours >= 24 ->
+overnight_flight(flight(departure,arrival,depart_time)) :-
+    flight_leg(departure, arrival, arrival_time),
+    (   arrival_time >= 24 ->
         write('Overnight flight.'), nl.
     ;   write('Not overnight flight.'), nl.
     ). 
@@ -67,10 +73,38 @@ overnight_flight(hours, minutes) :-
 /* c */
 transfer_flight(time(arrival_hours, arrival_minutes),
         time(depart_hours, depart_minutes)) :-
-    (   depart_minutes - arrival_minutes < 30 ->
+        hrs2mins(time(arrival_hours, arrival_minutes), M1),
+        hrs2mins(time(depart_hours, depart_minutes), M2),
+    (   M2 - M1 < 30 ->
         write('Invalid transfer.'), nl.
     ;   write('Valid transfer.'), nl.
     ).
+
+/* find shortest path between two airports */
+shortest(departure, arrival, list) :-
+    listpath(departure, arrival, list).
+
+listpath(Node, End, [flight(Node, Next, Next_Dep)|Outlist] ) :-
+    not(Node = End),
+    flight(Node, Next, Next_Dep),
+    listpath(Next, End, [flight(Node, Next, Next_Dep)], Outlist).
+
+listpath(Node, Node, _, []).
+listpath(Node, End, [flight(Prev_Dep, Prev_Arr, Prev_Deptime)|Tried],
+        [flight(Node, Next, Next_Dep)|list] ) :-
+    flight(Node, Next, Next_Dep),
+
+    /*needs some change in sub functions*/
+    flight_leg(Prev_Dep, Prev_Arr, Prev_Arrtime),
+    transfer_flight(Prev_flight, Future_flight),
+    overnight_flight(flight(Node,Next,Next_Dep)),
+    /*------------------------------------*/
+
+    Tried2 = append([flight(Prev_Dep, Prev_Arr, Prev_Deptime)], Tried),
+    not(member(Next, Tried2)),
+    not(Next = Prev_Arr),
+    listpath(Next, End, [flight(Node, Next, Next_Dep)|Tried2], list).
+
 
 /* fly functions */
 fly(airportA, airportA) :-
@@ -89,6 +123,10 @@ fly(_, arrival) :-
 
 fly(From,To) :-
   write('Printing flying options'),
-  nl.
-  
+  shortest(departure, arrival, list),
+  nl, !.
 
+fly( Depart, Arrive ) :- 
+  not(shortest(departure, arrival, _)),
+  write('Couldnt find you a flight'),
+  nl, !.
