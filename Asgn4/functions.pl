@@ -1,9 +1,3 @@
-
-
-%
-% Prolog version of not.
-%
-
 not( X ) :- X, !, fail.
 not( _ ).
 
@@ -76,6 +70,12 @@ print_airport_name(airport) :-
   airport(airport,name,_,_), 
   write(name), write('  ').
 
+/* print all flight paths? */
+print_path( [] ) :-
+   nl.
+print_path([airport|rest]) :-
+  format('flights: ~w',[airport]),
+  print_path(rest).
 
 
 /* check to make sure flight does not go past 1 day */
@@ -96,10 +96,16 @@ transfer_flight(time(arrival_hours, arrival_minutes),
         write('Valid transfer.'), nl
     ).
 
+
+
+
+/* print list somewhere? */
 /* find shortest path between two airports */
 shortest(departure, arrival, list) :-
-    listpath(departure, arrival, list).
+    listpath(departure, arrival, list),
+    print_path(list).
 
+/* recurse while the node arrived at is not the end node */
 listpath(Node, End, [flight(Node, Next, Next_Dep)|Outlist] ) :-
     not(Node = End),
     flight(Node, Next, Next_Dep),
@@ -123,22 +129,22 @@ listpath(Node, End, [flight(Prev_Dep, Prev_Arr, Prev_Deptime)|Tried],
 
 
 /* fly functions */
-fly(airportA, airportA) :-
+fly(airport, airport) :-
    write('Error: Departure and arrival airports are the same'),
    nl, !.
 
 fly(departure, _) :-
   not(airport(departure, _, _,_)),
   write('Error: Invalid departure airport'),
-  nl, !.
+  !, fail.
 
 fly(_, arrival) :-
   not(airport(arrival, _, _,_)),
   write('Error: arrival departure airport'),
-  nl, !.
+  !, fail.
 
 fly(departure,arrival) :-
-  write('Printing flying options'),
+  format('Printing flying options'),
   shortest(departure, arrival, list),
   nl, !.
 
