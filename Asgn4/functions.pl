@@ -11,17 +11,16 @@ not( _ ).
 /* Math functions */
 /*Return the distance in mile of the two location */
 haversine( latA, latB, lonA, lonB, distance) :-
-   radius is 3,959,
    dlon is lonB - lonA,
    dlat is latB - latA,
-   a is sin( Dlat / 2 ) ** 2
+   a is sin( dlat / 2 ) ** 2
       + cos( latA ) * cos( latB ) * sin( dlon / 2 ) ** 2,
    dist is 2 * atan2( sqrt( a ), sqrt( 1 - a )),
-   distance is dist * radius.
+   distance is dist * 3959.
 
 /* convert degree and minutes to radians */
 dms_to_radian( degree, minutes, radian) :-
-	dec_minute is (minutes / 60).
+	dec_minute is (minutes / 60),
 	dec_degree is degree + dec_minute,
 	rad is dec_degree / 180 * pi.
 
@@ -43,11 +42,11 @@ calc_arrival_time(depart_time, arrival_time, distance) :-
   t_hours is floor(travel_time),
   t_min is (travel_time - travel_hours) * 60, 
   t_minutes is floor(t_min),
-  add_time(depart_time, time(t_hours, t_minutes), arrival_time).
-  write(arrival_time), nl.
+  add_time(depart_time, time(t_hours, t_minutes), arrival_time),
+  write(arrival_time).
 
 /* calculate time for a particular leg of a flight? */
-flight_leg(departure, arrival, arrival_time)
+flight_leg(departure, arrival, arrival_time) :-
   flight(departure, arrival, depart_time),
   get_airport_data(departure, lat_d, lon_d),
   get_airport_data(arrival, lat_a, lon_a),
@@ -77,8 +76,8 @@ print_airport_name(airport) :-
 overnight_flight(flight(departure,arrival,depart_time)) :-
     flight_leg(departure, arrival, arrival_time),
     (   arrival_time >= 24 ->
-        write('Overnight flight.'), nl.
-    ;   write('Not overnight flight.'), nl.
+        write('Overnight flight.'), nl;   
+        write('Not overnight flight.'), nl
     ). 
 
 /* c */
@@ -87,8 +86,8 @@ transfer_flight(time(arrival_hours, arrival_minutes),
         hrs2mins(time(arrival_hours, arrival_minutes), M1),
         hrs2mins(time(depart_hours, depart_minutes), M2),
     (   M2 - M1 < 30 ->
-        write('Invalid transfer.'), nl.
-    ;   write('Valid transfer.'), nl.
+        write('Invalid transfer.'), nl;   
+        write('Valid transfer.'), nl
     ).
 
 /* find shortest path between two airports */
@@ -107,7 +106,7 @@ listpath(Node, End, [flight(Prev_Dep, Prev_Arr, Prev_Deptime)|Tried],
 
     /*needs some change in sub functions*/
     flight_leg(Prev_Dep, Prev_Arr, Prev_Arrtime),
-    transfer_flight(Prev_flight, Future_flight),
+    transfer_flight(Prev_Arrtime, Next_Dep),
     overnight_flight(flight(Node,Next,Next_Dep)),
     /*------------------------------------*/
 
@@ -132,12 +131,12 @@ fly(_, arrival) :-
   write('Error: arrival departure airport'),
   nl, !.
 
-fly(From,To) :-
+fly(departure,arrival) :-
   write('Printing flying options'),
   shortest(departure, arrival, list),
   nl, !.
 
-fly( Depart, Arrive ) :- 
+fly( departure, arrival ) :- 
   not(shortest(departure, arrival, _)),
   write('Couldnt find you a flight'),
   nl, !.
