@@ -15,3 +15,5 @@ d = R * c
 
 arrival time = departure time + travel time
 travel time = distance / 500
+
+(B,_) the underscore woruld imply boolean?

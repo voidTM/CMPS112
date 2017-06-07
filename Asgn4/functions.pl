@@ -129,26 +129,26 @@ listpath(Node, End, [flight(Prev_Dep, Prev_Arr, Prev_Deptime)|Tried],
 
 
 /* fly functions */
-fly(airport, airport) :-
+fly(Airport, Airport) :-
    write('Error: Departure and arrival airports are the same'),
    nl, !.
 
-fly(departure, _) :-
-  not(airport(departure, _, _,_)),
+fly(Departure, _) :-
+  not(airport(Departure, _, _,_)),
   write('Error: Invalid departure airport'),
   !, fail.
 
-fly(_, arrival) :-
-  not(airport(arrival, _, _,_)),
+fly(_, Arrival) :-
+  not(airport(Arrival, _, _,_)),
   write('Error: arrival departure airport'),
   !, fail.
 
-fly(departure,arrival) :-
+fly(Departure,Arrival) :-
   format('Printing flying options'),
-  shortest(departure, arrival, list),
+  shortest(Departure, Arrival, list),
   nl, !.
 
-fly( departure, arrival ) :- 
-  not(shortest(departure, arrival, _)),
+fly(Departure, Arrival ) :- 
+  not(shortest(Departure, Arrival, _)),
   write('Couldnt find you a flight'),
   nl, !.
