@@ -1,7 +1,14 @@
 
 
+%
+% Prolog version of not.
+%
 
-/* functions */
+not( X ) :- X, !, fail.
+not( _ ).
+
+
+/* Math functions */
 /*Return the distance in mile of the two location */
 haversine( latA, latB, lonA, lonB, distance) :-
    radius is 3,959,
@@ -12,9 +19,7 @@ haversine( latA, latB, lonA, lonB, distance) :-
    dist is 2 * atan2( sqrt( a ), sqrt( 1 - a )),
    distance is dist * radius.
 
-
 /* convert degree and minutes to radians */
-
 dms_to_radian( degree, minutes, radian) :-
 	dec_minute is (minutes / 60).
 	dec_degree is degree + dec_minute,
@@ -25,7 +30,6 @@ add_time(time(hA,mA), time(hB,mB), time(hC,mC)) :-
   hC is hA + hB,
   mC is mA + mB,
   calibrate(hC, mC).
-
 
 /* Get the latitude and longitude of an airport */
 get_airport_data(airport, latitude, longitude) :-
@@ -62,6 +66,13 @@ hrs2mins(time(hours, minutes), Mins) :-
     Mins is hours * 60 + minutes.
 
 	
+/*Helper function that prints the airport name*/
+print_airport_name(airport) :-
+  airport(airport,name,_,_), 
+  write(name), write('  ').
+
+
+
 /* check to make sure flight does not go past 1 day */
 overnight_flight(flight(departure,arrival,depart_time)) :-
     flight_leg(departure, arrival, arrival_time),
