@@ -24,11 +24,17 @@ dms_to_radian( degree, minutes, radian) :-
 	dec_degree is degree + dec_minute,
 	rad is dec_degree / 180 * pi.
 
+/* Time operations */
 /* add time */
 add_time(time(hA,mA), time(hB,mB), time(hC,mC)) :-
   hC is hA + hB,
   mC is mA + mB,
   calibrate(hC, mC).
+
+/* converts time to minutes */
+time_minutes(time(h, m), minutes) :-
+  minutes is h * 60 + m.
+
 
 /* Get the latitude and longitude of an airport */
 get_airport_data(airport, latitude, longitude) :-
