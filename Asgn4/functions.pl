@@ -113,7 +113,7 @@ listpath(Node, End, [flight(Node, Next, Next_Dep)|Outlist] ) :-
 
 listpath(Node, Node, _, []).
 listpath(Node, End, [flight(Prev_Dep, Prev_Arr, Prev_Deptime)|Tried],
-        [flight(Node, Next, Next_Dep)|list] ) :-
+        [flight(Node, Next, Next_Dep)|List] ) :-
     flight(Node, Next, Next_Dep),
 
     /*needs some change in sub functions*/
@@ -125,7 +125,7 @@ listpath(Node, End, [flight(Prev_Dep, Prev_Arr, Prev_Deptime)|Tried],
     Tried2 = append([flight(Prev_Dep, Prev_Arr, Prev_Deptime)], Tried),
     not(member(Next, Tried2)),
     not(Next = Prev_Arr),
-    listpath(Next, End, [flight(Node, Next, Next_Dep)|Tried2], list).
+    listpath(Next, End, [flight(Node, Next, Next_Dep)|Tried2], List).
 
 
 /* fly functions */
