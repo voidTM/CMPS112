@@ -116,13 +116,12 @@ listpath( Node, End,
    transfer_flight(Prev_Arrtime, Next_Dep),                  
    overnight_flight(Node,Next),               
    append([flight(Prev_Dep,Prev_Arr,Prev_DepTime)], Tried, Tried2),     
-       format('tried2 = : ~w', [Tried2]), nl,
+       format('List = : ~w', [List]), nl,
     format('Next = : ~w ',[flight(Node, Next, Next_Dep)]), nl,
-
-   not( member( Next, Tried2 )),                        
-   not(Next = Prev_Arr),       
-   append([flight(Node, Next, Next_Dep)], Tried2, Tried2),     
-   listpath( Next, End, Tried2, List ).        
+   append([flight(Node, Next, Next_Dep)], Tried2, Tried3),  
+   not( member( flight(Node, Next, Next_Dep), Tried2 )),                        
+   not(Next = Prev_Arr),
+   listpath( Next, End, Tried3, List ).        
 
 /* fly functions */
 fly(Airport, Airport) :-

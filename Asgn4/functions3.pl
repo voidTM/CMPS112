@@ -124,6 +124,7 @@ listpath( Node, End,
    possible_flight(flight(Node,Next,Next_Dep)),									%Possible Flight
    Tried2 = append([flight(Prev_Dep,Prev_Arr,Prev_DepTime)], Tried),			%Appends flight to tried flights
        format('tried2 = : ~w', [Tried2]), nl,
+       format('List = : ~w', [List]), nl,
     format('Next = : ~w ',[flight(Node, Next, Next_Dep)]), nl,
 
    not( member( Next, Tried2 )), 												%Flight not already tried
