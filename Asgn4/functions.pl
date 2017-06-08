@@ -68,7 +68,7 @@ hrs2mins(time(Hours, Mins), Minutes) :-
 /*Helper function that prints the airport name*/
 print_airport(Airport) :-
   airport(Airport,Name,_,_), 
-  write(Name), nl.
+  write(Name).
 
 /* print all flight paths? */
 print_path( [] ) :-
@@ -77,6 +77,11 @@ print_path([Airport|Rest]) :-
   format('flights: ~w',[Airport]), nl,
   print_path(Rest).
 
+print_flight(flight(AirportA,AirportB,time(Depart_H,Depart_M))) :-
+	write('From: '), print_airport(AirportA), write(' '),
+	write('To: '), print_airport(AirportB), write(' '),
+	write('Departure Time: '),
+	write(Depart_H), write(':'), write(Depart_M), nl.
 
 /* check to make sure flight does not go past 1 day */
 overnight_flight(Departure,Arrival) :-
