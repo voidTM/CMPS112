@@ -79,9 +79,10 @@ print_path([Airport|Rest]) :-
 
 
 /* check to make sure flight does not go past 1 day */
-overnight_flight(time(Curr_H, Curr_M)) :-
-    hrs2mins(Curr_H, Curr_M, T),
-    T < 1440. 
+overnight_flight(Departure,Arrival) :-
+    flight_leg(Departure, Arrival, Arrival_T),
+    hrs2mins(Arrival_T, Curr_T),
+    Curr_T < 1440. 
 
 /* c */
 transfer_flight(time(Arrival_H, Arrival_M),
@@ -98,7 +99,7 @@ shortest(Departure, Arrival) :-
     print_path(List).
 
 /* recurse while the node arrived at is not the end node */
-listpath(Node, End, Outlist) :-
+listpath(Node, End, Outlist ) :-
    write('starting recursion'), nl,
     listpath(Node, End, time(0,0), [Node], Outlist).
 
@@ -106,21 +107,13 @@ listpath(Node, Node, _,_, _).
 
 listpath( Node, End, Curr_Time, Tried,
    [flight(Node, Next, Next_Dep)|List] ) :-
-   flight(Node, Next, Next_Dep),    
-    %format('List = : ~w', [Tried]), nl,
-    %format('Node = : ~w', [Node]), nl,
-    %format('Next = : ~w', [Next]), nl,
+   flight(Node, Next, Next_Dep),                        
+   transfer_flight(Curr_Time, Next_Dep),  
+   flight_leg(Node, Next, Arrival_T),
 
-   /* Flight error checking */
-   transfer_flight(Curr_Time, Next_Dep),                  
-   flight_leg(Node, Next, Arrival_Time),
-   write('Transfer success'), nl,      
-
-   overnight_flight(Node,Next),   
-   write('overnight passed'), nl,            
+   overnight_flight(Node,Next),               
    not( member( Next, Tried )),                        
-   listpath( Next, End, Arrival_Time, [Next|Tried], List ).        
-
+   listpath( Next, End, Arrival_T, [Next|Tried], List ).        
 
 /* fly functions */
 fly(Airport, Airport) :-
