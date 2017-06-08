@@ -42,8 +42,7 @@ calc_arrival_time(Depart_time, Arrival_time, Distance) :-
   T_hours is floor(Travel_time),
   T_min is (Travel_time - T_hours) * 60, 
   T_minutes is floor(T_min),
-  add_time(Depart_time, time(T_hours, T_minutes), Arrival_time),
-  write(Arrival_time).
+  add_time(Depart_time, time(T_hours, T_minutes), Arrival_time).
 
 /* calculate time for a particular leg of a flight? */
 flight_leg(Departure, Arrival, Arrival_time) :-
@@ -53,16 +52,17 @@ flight_leg(Departure, Arrival, Arrival_time) :-
   haversine(Lat_d, Lat_a, Lon_d, Lon_a, Distance),
   calc_arrival_time(Depart_time, Arrival_time, Distance).
 
+
 /* traversal algorithm to find flight legs? */
 
 /* round times up to ensure 60 minutes max  */
 calibrate(Hours, Minutes) :-
-    Minutes is mod(Minutes, 60),
-    Hours is Hours + floor(Minutes / 60).
+    Hours is Hours + floor(Minutes / 60),
+    Minutes is mod(Minutes, 60).
 
 /* converts Hours minutes into minutes */
 hrs2mins(time(Hours, Mins), Minutes) :-
-    Minutes is Hours * 60 + Mins.
+    Minutes is (Hours * 60) + Mins.
 
 	
 /*Helper function that prints the airport name*/
@@ -74,56 +74,54 @@ print_airport(Airport) :-
 print_path( [] ) :-
    nl.
 print_path([Airport|Rest]) :-
-  format('flights: ~w',[Airport]),
+  format('flights: ~w',[Airport]), nl,
   print_path(Rest).
 
 
 /* check to make sure flight does not go past 1 day */
-overnight_flight(flight(Departure,Arrival,Depart_time)) :-
-    flight_leg(Departure, Arrival, time(Arrival_H, Arrival_T)),
-       Arrival_H < 24. 
+overnight_flight(Departure,Arrival) :-
+    flight_leg(Departure, Arrival, Arrival_T),
+    hrs2mins(Arrival_T, Curr_T),
+    Curr_T < 1440. 
 
 transfer_flight(time(Arrival_H, Arrival_M),
         time(Depart_H, Depart_M)) :-
         hrs2mins(time(Arrival_H, Arrival_M), M1),
         hrs2mins(time(Depart_H, Depart_M), M2),
-    (   M2 - M1 < 30 ->
-        write('Invalid transfer.'), nl;   
-        write('Valid transfer.'), nl
-    ).
-
-
+        (M2 - M1) >= 30.
 
 
 /* print list somewhere? */
 /* find shortest path between two airports */
-shortest(Departure, Arrival, List) :-
+shortest(Departure, Arrival) :-
     listpath(Departure, Arrival, List),
     print_path(List).
 
 /* recurse while the node arrived at is not the end node */
 listpath(Node, End, [flight(Node, Next, Next_Dep)|Outlist] ) :-
     not(Node = End),
+   write('starting recursion'), nl,
+
     flight(Node, Next, Next_Dep),
     listpath(Next, End, [flight(Node, Next, Next_Dep)], Outlist).
 
 listpath(Node, Node, _, []).
-listpath(Node, End, [flight(Prev_Dep, Prev_Arr, Prev_Deptime)|Tried],
-        [flight(Node, Next, Next_Dep)|List] ) :-
-    flight(Node, Next, Next_Dep),
-    %print_airport(Node),
-    %print_airport(Next_Dep),
-    /*needs some change in sub functions*/
-    flight_leg(Prev_Dep, Prev_Arr, Prev_Arrtime),
-    transfer_flight(Prev_Arrtime, Next_Dep),
-    overnight_flight(flight(Node,Next,Next_Dep)),
-    /*------------------------------------*/
 
-    Tried2 = append([flight(Prev_Dep, Prev_Arr, Prev_Deptime)], Tried),
-    not(member(Next, Tried2)),
-    not(Next = Prev_Arr),
-    listpath(Next, End, [flight(Node, Next, Next_Dep)|Tried2], List).
+listpath( Node, End,
+   [flight(Prev_Dep,Prev_Arr,Prev_DepTime)|Tried], 
+   [flight(Node, Next, Next_Dep)|List] ) :-
+   flight(Node, Next, Next_Dep),                        
+   flight_leg(Prev_Dep, Prev_Arr, Prev_Arrtime),      
+   transfer_flight(Prev_Arrtime, Next_Dep),                  
+   overnight_flight(Node,Next),               
+   append([flight(Prev_Dep,Prev_Arr,Prev_DepTime)], Tried, Tried2),     
+       format('tried2 = : ~w', [Tried2]), nl,
+    format('Next = : ~w ',[flight(Node, Next, Next_Dep)]), nl,
 
+   not( member( Next, Tried2 )),                        
+   not(Next = Prev_Arr),       
+   append([flight(Node, Next, Next_Dep)], Tried2, Tried2),     
+   listpath( Next, End, Tried2, List ).        
 
 /* fly functions */
 fly(Airport, Airport) :-
@@ -142,10 +140,10 @@ fly(_, Arrival) :-
 
 fly(Departure,Arrival) :-
   write('Printing flying options'), nl,
-  shortest(Departure, Arrival, List),
+  shortest(Departure, Arrival),
   nl, !.
 
 fly(Departure, Arrival ) :- 
-  not(shortest(Departure, Arrival, _)),
+  not(shortest(Departure, Arrival)),
   write('Couldnt find you a flight'),
   nl, !.
