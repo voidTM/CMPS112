@@ -84,6 +84,7 @@ overnight_flight(Departure,Arrival) :-
     hrs2mins(Arrival_T, Curr_T),
     Curr_T < 1440. 
 
+/* c */
 transfer_flight(time(Arrival_H, Arrival_M),
         time(Depart_H, Depart_M)) :-
         hrs2mins(time(Arrival_H, Arrival_M), M1),
@@ -115,12 +116,13 @@ listpath( Node, End,
    transfer_flight(Prev_Arrtime, Next_Dep),                  
    overnight_flight(Node,Next),               
    append([flight(Prev_Dep,Prev_Arr,Prev_DepTime)], Tried, Tried2),     
-       format('List = : ~w', [List]), nl,
+       format('tried2 = : ~w', [Tried2]), nl,
     format('Next = : ~w ',[flight(Node, Next, Next_Dep)]), nl,
-   append([flight(Node, Next, Next_Dep)], Tried2, Tried3),  
-   not( member( flight(Node, Next, Next_Dep), Tried2 )),                        
-   not(Next = Prev_Arr),
-   listpath( Next, End, Tried3, List ).        
+
+   not( member( Next, Tried2 )),                        
+   not(Next = Prev_Arr),       
+   append([flight(Node, Next, Next_Dep)], Tried2, Tried2),     
+   listpath( Next, End, Tried2, List ).        
 
 /* fly functions */
 fly(Airport, Airport) :-
