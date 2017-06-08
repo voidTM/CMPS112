@@ -57,12 +57,12 @@ flight_leg(Departure, Arrival, Arrival_time) :-
 
 /* round times up to ensure 60 minutes max  */
 calibrate(Hours, Minutes) :-
-    Hours is Hours + floor(Minutes / 60).
-    Minutes is mod(Minutes, 60),
+    Hours is Hours + floor(Minutes / 60),
+    Minutes is mod(Minutes, 60).
 
 /* converts Hours minutes into minutes */
 hrs2mins(time(Hours, Mins), Minutes) :-
-    Minutes is Hours * 60 + Mins.
+    Minutes is (Hours * 60) + Mins.
 
 	
 /*Helper function that prints the airport name*/
@@ -80,17 +80,16 @@ print_path([Airport|Rest]) :-
 
 /* check to make sure flight does not go past 1 day */
 overnight_flight(Departure,Arrival) :-
-    flight_leg(Departure, Arrival, time(Arrival_H, Arrival_M)),
-    Arrival_H < 24. 
+    flight_leg(Departure, Arrival, Arrival_T),
+    hrs2mins(Arrival_T, Curr_T),
+    Curr_T < 1440. 
 
 /* c */
 transfer_flight(time(Arrival_H, Arrival_M),
         time(Depart_H, Depart_M)) :-
         hrs2mins(time(Arrival_H, Arrival_M), M1),
         hrs2mins(time(Depart_H, Depart_M), M2),
-        M2 - M1 > 30.
-
-
+        (M2 - M1) >= 30.
 
 
 /* print list somewhere? */
@@ -108,22 +107,22 @@ listpath(Node, End, [flight(Node, Next, Next_Dep)|Outlist] ) :-
     listpath(Next, End, [flight(Node, Next, Next_Dep)], Outlist).
 
 listpath(Node, Node, _, []).
-listpath(Node, End, [flight(Prev_Dep, Prev_Arr, Prev_Deptime)|Tried],
-        [flight(Node, Next, Next_Dep)|List] ) :-
-    /* get next possible departure from airport? */
-    flight(Node, Next, Next_Dep),
-    /*needs some change in sub functions*/
-    flight_leg(Prev_Dep, Prev_Arr, Prev_Arrtime),
-    transfer_flight(Prev_Arrtime, Next_Dep),
-    overnight_flight(Node,Next),
-    /*------------------------------------*/
 
-    append([flight(Prev_Dep, Prev_Arr, Prev_Deptime)], Tried, Tried2),
-    /* broken statement that does nothing? */
-    not(member(Next, Tried2)), 
-    not(Next = Prev_Arr),
-    listpath(Next, End, [flight(Node, Next, Next_Dep)|Tried2], List).
+listpath( Node, End,
+   [flight(Prev_Dep,Prev_Arr,Prev_DepTime)|Tried], 
+   [flight(Node, Next, Next_Dep)|List] ) :-
+   flight(Node, Next, Next_Dep),                        
+   flight_leg(Prev_Dep, Prev_Arr, Prev_Arrtime),      
+   transfer_flight(Prev_Arrtime, Next_Dep),                  
+   overnight_flight(Node,Next),               
+   append([flight(Prev_Dep,Prev_Arr,Prev_DepTime)], Tried, Tried2),     
+       format('tried2 = : ~w', [Tried2]), nl,
+    format('Next = : ~w ',[flight(Node, Next, Next_Dep)]), nl,
 
+   not( member( Next, Tried2 )),                        
+   not(Next = Prev_Arr),       
+   append([flight(Node, Next, Next_Dep)], Tried2, Tried2),     
+   listpath( Next, End, Tried2, List ).        
 
 /* fly functions */
 fly(Airport, Airport) :-
