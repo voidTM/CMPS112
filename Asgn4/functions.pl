@@ -103,29 +103,21 @@ shortest(Departure, Arrival) :-
     print_path(List).
 
 /* recurse while the node arrived at is not the end node */
-listpath(Node, End, [flight(Node, Next, Next_Dep)|Outlist] ) :-
-    not(Node = End),
+listpath(Node, End, Outlist ) :-
    write('starting recursion'), nl,
+    listpath(Node, End, time(0,0), [Node], Outlist).
 
-    flight(Node, Next, Next_Dep),
-    listpath(Next, End, [flight(Node, Next, Next_Dep)], Outlist).
+listpath(Node, Node, _,_, _).
 
-listpath(Node, Node, _, []).
-
-listpath( Node, End,
-   [flight(Prev_Dep,Prev_Arr,Prev_DepTime)|Tried], 
+listpath( Node, End, Curr_Time, Tried,
    [flight(Node, Next, Next_Dep)|List] ) :-
    flight(Node, Next, Next_Dep),                        
-   flight_leg(Prev_Dep, Prev_Arr, Prev_Arrtime),      
-   transfer_flight(Prev_Arrtime, Next_Dep),                  
+   transfer_flight(Curr_Time, Next_Dep),  
+   flight_leg(Node, Next, Arrival_T),
+
    overnight_flight(Node,Next),               
-   append([flight(Prev_Dep,Prev_Arr,Prev_DepTime)], Tried, Tried2),     
-       format('List = : ~w', [List]), nl,
-    format('Next = : ~w ',[flight(Node, Next, Next_Dep)]), nl,
-   append([flight(Node, Next, Next_Dep)], Tried2, Tried3),  
-   not( member( flight(Node, Next, Next_Dep), Tried2 )),                        
-   not(Next = Prev_Arr),
-   listpath( Next, End, Tried3, List ).        
+   not( member( Next, Tried )),                        
+   listpath( Next, End, Arrival_T, [Next|Tried], List ).        
 
 /* fly functions */
 fly(Airport, Airport) :-
