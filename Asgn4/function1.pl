@@ -70,6 +70,8 @@ print_airport(Airport) :-
   airport(Airport,Name,_,_), 
   write(Name), nl.
 
+print_flight(flight(Departure, Arrival, ))
+
 /* print all flight paths? */
 print_path( [] ) :-
    nl.
@@ -92,8 +94,8 @@ transfer_flight(time(Arrival_H, Arrival_M),
         hrs2mins(time(Arrival_H, Arrival_M), M1),
         hrs2mins(time(Depart_H, Depart_M), M2),
     (   M2 - M1 < 30 ->
-        write('Invalid transfer.'), nl;   
-        write('Valid transfer.'), nl
+        %write('Invalid transfer.'), nl;   
+        %write('Valid transfer.'), nl
     ).
 
 

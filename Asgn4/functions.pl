@@ -80,8 +80,8 @@ print_path([Airport|Rest]) :-
 
 /* check to make sure flight does not go past 1 day */
 overnight_flight(flight(Departure,Arrival,Depart_time)) :-
-    flight_leg(Departure, Arrival, Arrival_time),
-    (   Arrival_time >= 24 ->
+    flight_leg(Departure, Arrival, time(Arrival_H, Arrival_T)),
+    (   Arrival_H >= 24 ->
         write('Overnight flight.'), nl;   
         write('Not overnight flight.'), nl
     ). 
@@ -115,8 +115,8 @@ listpath(Node, Node, _, []).
 listpath(Node, End, [flight(Prev_Dep, Prev_Arr, Prev_Deptime)|Tried],
         [flight(Node, Next, Next_Dep)|List] ) :-
     flight(Node, Next, Next_Dep),
-    print_airport(Node),
-    print_airport(Next_Dep),
+    %print_airport(Node),
+    %print_airport(Next_Dep),
     /*needs some change in sub functions*/
     flight_leg(Prev_Dep, Prev_Arr, Prev_Arrtime),
     transfer_flight(Prev_Arrtime, Next_Dep),
