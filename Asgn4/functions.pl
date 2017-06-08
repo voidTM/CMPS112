@@ -66,9 +66,9 @@ hrs2mins(time(Hours, Mins), Minutes) :-
 
 	
 /*Helper function that prints the airport name*/
-print_airport_name(Airport) :-
+print_airport(Airport) :-
   airport(Airport,Name,_,_), 
-  write(Name), write('  ').
+  write(Name), nl.
 
 /* print all flight paths? */
 print_path( [] ) :-
@@ -115,7 +115,8 @@ listpath(Node, Node, _, []).
 listpath(Node, End, [flight(Prev_Dep, Prev_Arr, Prev_Deptime)|Tried],
         [flight(Node, Next, Next_Dep)|List] ) :-
     flight(Node, Next, Next_Dep),
-
+    print_airport(Node),
+    print_airport(Next_Dep),
     /*needs some change in sub functions*/
     flight_leg(Prev_Dep, Prev_Arr, Prev_Arrtime),
     transfer_flight(Prev_Arrtime, Next_Dep),
@@ -144,7 +145,7 @@ fly(_, Arrival) :-
   !, fail.
 
 fly(Departure,Arrival) :-
-  write('Printing flying options'),
+  write('Printing flying options'), nl,
   shortest(Departure, Arrival, List),
   nl, !.
 
