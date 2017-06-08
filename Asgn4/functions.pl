@@ -57,8 +57,8 @@ flight_leg(Departure, Arrival, Arrival_time) :-
 
 /* round times up to ensure 60 minutes max  */
 calibrate(Hours, Minutes) :-
-    Minutes is mod(Minutes, 60),
     Hours is Hours + floor(Minutes / 60).
+    Minutes is mod(Minutes, 60),
 
 /* converts Hours minutes into minutes */
 hrs2mins(time(Hours, Mins), Minutes) :-
@@ -74,34 +74,36 @@ print_airport(Airport) :-
 print_path( [] ) :-
    nl.
 print_path([Airport|Rest]) :-
-  format('flights: ~w',[Airport]),
+  format('flights: ~w',[Airport]), nl,
   print_path(Rest).
 
 
 /* check to make sure flight does not go past 1 day */
-overnight_flight(flight(Departure,Arrival,Depart_time)) :-
-    flight_leg(Departure, Arrival, time(Arrival_H, Arrival_T)),
-    Arrival_H >= 24. 
+overnight_flight(Departure,Arrival) :-
+    flight_leg(Departure, Arrival, time(Arrival_H, Arrival_M)),
+    Arrival_H < 24. 
 
 /* c */
 transfer_flight(time(Arrival_H, Arrival_M),
         time(Depart_H, Depart_M)) :-
         hrs2mins(time(Arrival_H, Arrival_M), M1),
         hrs2mins(time(Depart_H, Depart_M), M2),
-        M2 - M1 < 30.
+        M2 - M1 > 30.
 
 
 
 
 /* print list somewhere? */
 /* find shortest path between two airports */
-shortest(Departure, Arrival, List) :-
+shortest(Departure, Arrival) :-
     listpath(Departure, Arrival, List),
     print_path(List).
 
 /* recurse while the node arrived at is not the end node */
 listpath(Node, End, [flight(Node, Next, Next_Dep)|Outlist] ) :-
     not(Node = End),
+   write('starting recursion'), nl,
+
     flight(Node, Next, Next_Dep),
     listpath(Next, End, [flight(Node, Next, Next_Dep)], Outlist).
 
@@ -110,16 +112,15 @@ listpath(Node, End, [flight(Prev_Dep, Prev_Arr, Prev_Deptime)|Tried],
         [flight(Node, Next, Next_Dep)|List] ) :-
     /* get next possible departure from airport? */
     flight(Node, Next, Next_Dep),
-    %print_airport(Node),
-    %print_airport(Next_Dep),
     /*needs some change in sub functions*/
     flight_leg(Prev_Dep, Prev_Arr, Prev_Arrtime),
     transfer_flight(Prev_Arrtime, Next_Dep),
-    overnight_flight(flight(Node,Next,Next_Dep)),
+    overnight_flight(Node,Next),
     /*------------------------------------*/
 
-    Tried2 = append([flight(Prev_Dep, Prev_Arr, Prev_Deptime)], Tried),
-    not(member(Next, Tried2)),
+    append([flight(Prev_Dep, Prev_Arr, Prev_Deptime)], Tried, Tried2),
+    /* broken statement that does nothing? */
+    not(member(Next, Tried2)), 
     not(Next = Prev_Arr),
     listpath(Next, End, [flight(Node, Next, Next_Dep)|Tried2], List).
 
@@ -141,10 +142,10 @@ fly(_, Arrival) :-
 
 fly(Departure,Arrival) :-
   write('Printing flying options'), nl,
-  shortest(Departure, Arrival, List),
+  shortest(Departure, Arrival),
   nl, !.
 
 fly(Departure, Arrival ) :- 
-  not(shortest(Departure, Arrival, _)),
+  not(shortest(Departure, Arrival)),
   write('Couldnt find you a flight'),
   nl, !.

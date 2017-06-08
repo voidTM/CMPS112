@@ -81,7 +81,6 @@ print_path([Airport|Rest]) :-
 /* check to make sure flight does not go past 1 day */
 overnight_flight(flight(Departure,Arrival,Depart_time)) :-
     flight_leg(Departure, Arrival, time(Arrival_H, Arrival_T)),
-    format('currHour: ~w',[Arrival_H]), nl,
     Arrival_H < 24. 
 
 /* c */
@@ -102,7 +101,9 @@ shortest(Departure, Arrival) :-
 
 /* recurse while the node arrived at is not the end node */
 listpath(Node, End, [flight(Node, Next, Next_Dep)|Outlist] ) :-
-    %not(Node = End),
+    not(Node = End),
+   write('starting recursion'), nl,
+
     flight(Node, Next, Next_Dep),
     listpath(Next, End, [flight(Node, Next, Next_Dep)], Outlist).
 
@@ -111,18 +112,18 @@ listpath(Node, End, [flight(Prev_Dep, Prev_Arr, Prev_Deptime)|Tried],
         [flight(Node, Next, Next_Dep)|List] ) :-
     /* get next possible departure from airport? */
     flight(Node, Next, Next_Dep),
-    format('From: ~w ', [Prev_Dep]),
-    format('To: ~w', [Prev_Arr]), nl,
     /*needs some change in sub functions*/
     flight_leg(Prev_Dep, Prev_Arr, Prev_Arrtime),
     transfer_flight(Prev_Arrtime, Next_Dep),
     overnight_flight(flight(Node,Next,Next_Dep)),
     /*------------------------------------*/
 
-    append([flight(Prev_Dep, Prev_Arr, Prev_Deptime)], Tried, Tried2),
+    Tried2 = append([flight(Prev_Dep, Prev_Arr, Prev_Deptime)], Tried),
     /* broken statement that does nothing? */
+    %format('tried2 = : ~w', [Tried2]), nl,
+    format('Next = : ~w ',[flight(Node, Next, Next_Dep)]), nl,
     not(member([flight(Node, Next, Next_Dep)], Tried2)), 
-    %not(Next = Prev_Arr),
+    not(Next = Prev_Arr),
     listpath(Next, End, [flight(Node, Next, Next_Dep)|Tried2], List).
 
 
