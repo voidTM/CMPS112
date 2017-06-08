@@ -42,8 +42,7 @@ calc_arrival_time(Depart_time, Arrival_time, Distance) :-
   T_hours is floor(Travel_time),
   T_min is (Travel_time - T_hours) * 60, 
   T_minutes is floor(T_min),
-  add_time(Depart_time, time(T_hours, T_minutes), Arrival_time),
-  write(Arrival_time).
+  add_time(Depart_time, time(T_hours, T_minutes), Arrival_time).
 
 /* calculate time for a particular leg of a flight? */
 flight_leg(Departure, Arrival, Arrival_time) :-
@@ -52,6 +51,7 @@ flight_leg(Departure, Arrival, Arrival_time) :-
   get_airport_data(Arrival, Lat_a, Lon_a),
   haversine(Lat_d, Lat_a, Lon_d, Lon_a, Distance),
   calc_arrival_time(Depart_time, Arrival_time, Distance).
+
 
 /* traversal algorithm to find flight legs? */
 
@@ -81,20 +81,14 @@ print_path([Airport|Rest]) :-
 /* check to make sure flight does not go past 1 day */
 overnight_flight(flight(Departure,Arrival,Depart_time)) :-
     flight_leg(Departure, Arrival, time(Arrival_H, Arrival_T)),
-    (   Arrival_H >= 24 ->
-        write('Overnight flight.'), nl;   
-        write('Not overnight flight.'), nl
-    ). 
+    Arrival_H >= 24. 
 
 /* c */
 transfer_flight(time(Arrival_H, Arrival_M),
         time(Depart_H, Depart_M)) :-
         hrs2mins(time(Arrival_H, Arrival_M), M1),
         hrs2mins(time(Depart_H, Depart_M), M2),
-    (   M2 - M1 < 30 ->
-        write('Invalid transfer.'), nl;   
-        write('Valid transfer.'), nl
-    ).
+        M2 - M1 < 30.
 
 
 
@@ -114,6 +108,7 @@ listpath(Node, End, [flight(Node, Next, Next_Dep)|Outlist] ) :-
 listpath(Node, Node, _, []).
 listpath(Node, End, [flight(Prev_Dep, Prev_Arr, Prev_Deptime)|Tried],
         [flight(Node, Next, Next_Dep)|List] ) :-
+    /* get next possible departure from airport? */
     flight(Node, Next, Next_Dep),
     %print_airport(Node),
     %print_airport(Next_Dep),
