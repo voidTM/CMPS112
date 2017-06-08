@@ -81,12 +81,8 @@ print_path([Airport|Rest]) :-
 /* check to make sure flight does not go past 1 day */
 overnight_flight(flight(Departure,Arrival,Depart_time)) :-
     flight_leg(Departure, Arrival, time(Arrival_H, Arrival_T)),
-    (   Arrival_H >= 24 ->
-        write('Overnight flight.'), nl;   
-        write('Not overnight flight.'), nl
-    ). 
+       Arrival_H < 24. 
 
-/* c */
 transfer_flight(time(Arrival_H, Arrival_M),
         time(Depart_H, Depart_M)) :-
         hrs2mins(time(Arrival_H, Arrival_M), M1),
