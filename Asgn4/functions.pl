@@ -4,93 +4,93 @@ not( _ ).
 
 /* Math functions */
 /*Return the distance in mile of the two location */
-haversine( latA, latB, lonA, lonB, distance) :-
-   dlon is lonB - lonA,
-   dlat is latB - latA,
-   a is sin( dlat / 2 ) ** 2
-      + cos( latA ) * cos( latB ) * sin( dlon / 2 ) ** 2,
-   dist is 2 * atan2( sqrt( a ), sqrt( 1 - a )),
-   distance is dist * 3959.
+haversine( LatA, LatB, LonA, LonB, Distance) :-
+   Dlon is LonB - LonA,
+   Dlat is LatB - LatA,
+   A is sin( Dlat / 2 ) ** 2
+      + cos( LatA ) * cos( LatB ) * sin( Dlon / 2 ) ** 2,
+   Dist is 2 * atan2( sqrt( A ), sqrt( 1 - A )),
+   Distance is Dist * 3959.
 
 /* convert degree and minutes to radians */
-dms_to_radian( degree, minutes, radian) :-
-	dec_minute is (minutes / 60),
-	dec_degree is degree + dec_minute,
-	rad is dec_degree / 180 * pi.
+dms_to_radian( Degree, Minutes, Radian) :-
+	Dec_minute is (Minutes / 60),
+	Dec_degree is Degree + Dec_minute,
+	Radian is Dec_degree / 180 * pi.
 
 /* Time operations */
 /* add time */
-add_time(time(hA,mA), time(hB,mB), time(hC,mC)) :-
-  hC is hA + hB,
-  mC is mA + mB,
-  calibrate(hC, mC).
+add_time(time(H_A,M_A), time(H_B,M_B), time(H_C,M_C)) :-
+  H_C is H_A + H_B,
+  M_C is M_A + M_B,
+  calibrate(H_C, M_C).
 
 /* converts time to minutes */
-time_minutes(time(h, m), minutes) :-
-  minutes is h * 60 + m.
+time_minutes(time(H, M), Minutes) :-
+  Minutes is H * 60 + M.
 
 
 /* Get the latitude and longitude of an airport */
-get_airport_data(airport, latitude, longitude) :-
-  airport(airport, _, degmin(A, B), degmin(C,D)),
-  dms_to_radian(A, B, latitude),
-  dms_to_radian(C, D, longitude).
+get_airport_data(Airport, Latitude, Longitude) :-
+  airport(Airport, _, degmin(A, B), degmin(C,D)),
+  dms_to_radian(A, B, Latitude),
+  dms_to_radian(C, D, Longitude).
 
 /*calculate flight time from one airport to another? */
-calc_arrival_time(depart_time, arrival_time, distance) :-
-  travel_time is distance / 500,
-  t_hours is floor(travel_time),
-  t_min is (travel_time - travel_hours) * 60, 
-  t_minutes is floor(t_min),
-  add_time(depart_time, time(t_hours, t_minutes), arrival_time),
-  write(arrival_time).
+calc_arrival_time(Depart_time, Arrival_time, Distance) :-
+  Travel_time is Distance / 500,
+  T_hours is floor(Travel_time),
+  T_min is (Travel_time - T_hours) * 60, 
+  T_minutes is floor(T_min),
+  add_time(Depart_time, time(T_hours, T_minutes), Arrival_time),
+  write(Arrival_time).
 
 /* calculate time for a particular leg of a flight? */
-flight_leg(departure, arrival, arrival_time) :-
-  flight(departure, arrival, depart_time),
-  get_airport_data(departure, lat_d, lon_d),
-  get_airport_data(arrival, lat_a, lon_a),
-  haversine(lat_d, lat_a, lon_d, lon_a, distance),
-  calc_arrival_time(depart_time, arrival_time, distance).
+flight_leg(Departure, Arrival, Arrival_time) :-
+  flight(Departure, Arrival, Depart_time),
+  get_airport_data(Departure, Lat_d, Lon_d),
+  get_airport_data(Arrival, Lat_a, Lon_a),
+  haversine(Lat_d, Lat_a, Lon_d, Lon_a, Distance),
+  calc_arrival_time(Depart_time, Arrival_time, Distance).
 
 /* traversal algorithm to find flight legs? */
 
 /* round times up to ensure 60 minutes max  */
-calibrate(hours, minutes) :-
-    minutes is mod(minutes, 60),
-    hours is hours + floor(minutes / 60).
+calibrate(Hours, Minutes) :-
+    Minutes is mod(Minutes, 60),
+    Hours is Hours + floor(Minutes / 60).
 
-/* converts hours minutes into minutes */
-hrs2mins(time(hours, minutes), Mins) :-
-    Mins is hours * 60 + minutes.
+/* converts Hours minutes into minutes */
+hrs2mins(time(Hours, Mins), Minutes) :-
+    Minutes is Hours * 60 + Mins.
 
 	
 /*Helper function that prints the airport name*/
-print_airport_name(airport) :-
-  airport(airport,name,_,_), 
-  write(name), write('  ').
+print_airport_name(Airport) :-
+  airport(Airport,Name,_,_), 
+  write(Name), write('  ').
 
 /* print all flight paths? */
 print_path( [] ) :-
    nl.
-print_path([airport|rest]) :-
-  format('flights: ~w',[airport]),
-  print_path(rest).
+print_path([Airport|Rest]) :-
+  format('flights: ~w',[Airport]),
+  print_path(Rest).
 
 
 /* check to make sure flight does not go past 1 day */
-overnight_flight(flight(departure,arrival,depart_time)) :-
-    flight_leg(departure, arrival, arrival_time),
-    (   arrival_time >= 24 ->
+overnight_flight(flight(Departure,Arrival,Depart_time)) :-
+    flight_leg(Departure, Arrival, Arrival_time),
+    (   Arrival_time >= 24 ->
         write('Overnight flight.'), nl;   
         write('Not overnight flight.'), nl
     ). 
 
 /* c */
-transfer_flight(time(arrival_hours, arrival_minutes),
-        time(depart_hours, depart_minutes)) :-
-        hrs2mins(time(arrival_hours, arrival_minutes), M1),
-        hrs2mins(time(depart_hours, depart_minutes), M2),
+transfer_flight(time(Arrival_H, Arrival_M),
+        time(Depart_H, Depart_M)) :-
+        hrs2mins(time(Arrival_H, Arrival_M), M1),
+        hrs2mins(time(Depart_H, Depart_M), M2),
     (   M2 - M1 < 30 ->
         write('Invalid transfer.'), nl;   
         write('Valid transfer.'), nl
@@ -101,9 +101,9 @@ transfer_flight(time(arrival_hours, arrival_minutes),
 
 /* print list somewhere? */
 /* find shortest path between two airports */
-shortest(departure, arrival, list) :-
-    listpath(departure, arrival, list),
-    print_path(list).
+shortest(Departure, Arrival, List) :-
+    listpath(Departure, Arrival, List),
+    print_path(List).
 
 /* recurse while the node arrived at is not the end node */
 listpath(Node, End, [flight(Node, Next, Next_Dep)|Outlist] ) :-
@@ -140,12 +140,12 @@ fly(Departure, _) :-
 
 fly(_, Arrival) :-
   not(airport(Arrival, _, _,_)),
-  write('Error: arrival departure airport'),
+  write('Error: Invalid arrival airport'),
   !, fail.
 
 fly(Departure,Arrival) :-
-  format('Printing flying options'),
-  shortest(Departure, Arrival, list),
+  write('Printing flying options'),
+  shortest(Departure, Arrival, List),
   nl, !.
 
 fly(Departure, Arrival ) :- 
